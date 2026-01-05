@@ -35,10 +35,12 @@ body {
 <button id="gameBtn">¡Clic aquí!</button>
 <br><br>
 <button id="restartBtn" style="display:none;">🔄 Jugar de nuevo</button>
+
 <script>
 let score = 0;
 let timeLeft = 10;
-let gameActive = true;
+let gameActive = false;
+let timerStarted = false;
 
 const btn = document.getElementById("gameBtn");
 const restartBtn = document.getElementById("restartBtn");
@@ -46,27 +48,38 @@ const scoreText = document.getElementById("score");
 const timerText = document.getElementById("timer");
 
 btn.addEventListener("click", () => {
-    if (!gameActive) return;
-    score++;
-    scoreText.textContent = score;
+    if (!gameActive) {
+        gameActive = true;
+        startTimer();
+    }
+    if (gameActive) {
+        score++;
+        scoreText.textContent = score;
+    }
 });
 
-const timer = setInterval(() => {
-    timeLeft--;
-    timerText.textContent = timeLeft;
+function startTimer() {
+    if (timerStarted) return;
+    timerStarted = true;
 
-    if (timeLeft <= 0) {
-        clearInterval(timer);
-        gameActive = false;
-        btn.disabled = true;
-        restartBtn.style.display = "inline-block";
-    }
-}, 1000);
+    const timer = setInterval(() => {
+        timeLeft--;
+        timerText.textContent = timeLeft;
+
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            gameActive = false;
+            btn.disabled = true;
+            restartBtn.style.display = "inline-block";
+        }
+    }, 1000);
+}
 
 restartBtn.addEventListener("click", () => {
     location.reload();
 });
 </script>
+
 
 
 </body>
