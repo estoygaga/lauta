@@ -123,86 +123,10 @@
     </a>
 </footer>
 
+<script src="//code.tidio.co/gyxhemy10se4osdwwvflnlls3ir0ozra.js" async>
 
-<script>
-    const btn = document.getElementById("menuBtn");
-    const menu = document.getElementById("menu");
-
-    btn.addEventListener("click", () => {
-        menu.style.display = menu.style.display === "block" ? "none" : "block";
-    });
 </script>
-<!-- CHAT SIMPLE -->
-<div id="chatbot">
-    <div id="chatHeader">💬 Chat</div>
-    <div id="chatMessages">
-        <p><strong>Bot:</strong> ¡Hola! Escríbeme 😊</p>
-    </div>
-    <input id="chatInput" type="text" placeholder="Escribe un mensaje y presiona Enter..." />
-</div>
 
-<style>
-#chatbot {
-    position: fixed;
-    bottom: 80px;
-    right: 20px;
-    width: 260px;
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-family: Arial;
-    box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    z-index: 999;
-}
-#chatHeader {
-    background: #333;
-    color: white;
-    padding: 10px;
-    font-weight: bold;
-}
-#chatMessages {
-    height: 200px;
-    padding: 10px;
-    overflow-y: auto;
-    font-size: 14px;
-}
-#chatInput {
-    width: 100%;
-    border: none;
-    padding: 8px;
-    box-sizing: border-box;
-}
-</style>
-
-<script>
-const input = document.getElementById("chatInput");
-const messages = document.getElementById("chatMessages");
-
-input.addEventListener("keypress", function(e) {
-    if (e.key === "Enter" && input.value.trim() !== "") {
-        addMessage("Tú", input.value);
-        botReply(input.value);
-        input.value = "";
-    }
-});
-
-function addMessage(sender, text) {
-    messages.innerHTML += `<p><strong>${sender}:</strong> ${text}</p>`;
-    messages.scrollTop = messages.scrollHeight;
-}
-
-function botReply(text) {
-    text = text.toLowerCase();
-    let reply = "No entendí 😅";
-
-    if (text.includes("hola")) reply = "¡Hola! ¿Cómo puedo ayudarte?";
-    else if (text.includes("precio")) reply = "Para precios, contáctame por Instagram o PayPal.";
-    else if (text.includes("contacto")) reply = "Puedes escribirme por Instagram 📸";
-    else if (text.includes("paypal")) reply = "Acepto pagos por PayPal 💙";
-
-    setTimeout(() => addMessage("Bot", reply), 500);
-}
-</script>
 
 
 </body>
