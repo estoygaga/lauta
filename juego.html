@@ -4,37 +4,101 @@
     <meta charset="UTF-8">
     <title>Mini Juego</title>
     
-    <style>
+
+<style>
 body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    height: 100vh;
     margin: 0;
+    height: 100vh;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: radial-gradient(circle at top, #1e3c72, #2a5298);
     display: flex;
     justify-content: center;
     align-items: center;
+    color: #333;
 }
 
-.game-box {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
+.game-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 30px 25px;
+    width: 320px;
     text-align: center;
-    width: 300px;
-    box-shadow: 0 10px 25px rgba(
+    box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+}
+
+.game-card h1 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 26px;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 0;
+    font-size: 16px;
+}
+
+.stat {
+    background: #f4f6fb;
+    padding: 10px;
+    border-radius: 10px;
+    width: 48%;
+    font-weight: bold;
+}
+
+#gameBtn {
+    width: 100%;
+    padding: 16px;
+    font-size: 18px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ff9800, #ff5722);
+    color: white;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+
+#gameBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+}
+
+#gameBtn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+#restartBtn {
+    margin-top: 15px;
+    padding: 12px;
+    width: 100%;
+    font-size: 16px;
+    border: none;
+    border-radius: 10px;
+    background: #4caf50;
+    color: white;
+    cursor: pointer;
+    display: none;
+}
 </style>
+
 
 </head>
 <body>
+<div class="game-card">
+    <h1>🎮 Click Challenge</h1>
+    <p>Haz la mayor cantidad de clics en 10 segundos</p>
 
-<h1>🎮 Mini Juego</h1>
+    <div class="stats">
+        <div class="stat">⏱ <span id="timer">10</span>s</div>
+        <div class="stat">⭐ <span id="score">0</span></div>
+    </div>
 
-<p>Tiempo: <span id="timer">10</span></p>
-<p>Puntos: <span id="score">0</span></p>
+    <button id="gameBtn">¡Empezar!</button>
+    <button id="restartBtn">🔄 Jugar de nuevo</button>
+</div>
 
-<button id="gameBtn">¡Clic aquí!</button>
-<br><br>
-<button id="restartBtn" style="display:none;">🔄 Jugar de nuevo</button>
 
 <script>
 let score = 0;
