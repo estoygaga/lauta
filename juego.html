@@ -97,6 +97,9 @@ body {
 
     <button id="gameBtn">¡Empezar!</button>
     <button id="restartBtn">🔄 Jugar de nuevo</button>
+    <h3>🏆 Ranking</h3>
+<ul id="ranking"></ul>
+
 </div>
 
 
@@ -110,11 +113,16 @@ const btn = document.getElementById("gameBtn");
 const restartBtn = document.getElementById("restartBtn");
 const scoreText = document.getElementById("score");
 const timerText = document.getElementById("timer");
+const rankingList = document.getElementById("ranking");
+
+let ranking = JSON.parse(localStorage.getItem("ranking")) || [];
+renderRanking();
 
 btn.addEventListener("click", () => {
     if (!gameActive) {
         gameActive = true;
         startTimer();
+        btn.textContent = "¡Click!";
     }
     if (gameActive) {
         score++;
@@ -132,17 +140,39 @@ function startTimer() {
 
         if (timeLeft <= 0) {
             clearInterval(timer);
-            gameActive = false;
-            btn.disabled = true;
-            restartBtn.style.display = "inline-block";
+            endGame();
         }
     }, 1000);
+}
+
+function endGame() {
+    gameActive = false;
+    btn.disabled = true;
+    restartBtn.style.display = "block";
+
+    const name = prompt("🏅 Tu nombre:");
+    if (!name) return;
+
+    ranking.push({ name, score });
+    ranking.sort((a, b) => b.score - a.score);
+    ranking = ranking.slice(0, 5);
+
+    localStorage.setItem("ranking", JSON.stringify(ranking));
+    renderRanking();
+}
+
+function renderRanking() {
+    rankingList.innerHTML = "";
+    ranking.forEach((r, i) => {
+        rankingList.innerHTML += `<li>${i + 1}. ${r.name} — ${r.score}</li>`;
+    });
 }
 
 restartBtn.addEventListener("click", () => {
     location.reload();
 });
 </script>
+
 
 
 
