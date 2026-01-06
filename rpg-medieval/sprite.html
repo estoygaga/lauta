@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Test Sprite Knight</title>
+<title>RPG Medieval - Idle</title>
+
 <style>
 body {
     margin: 0;
@@ -12,9 +13,11 @@ body {
     align-items: center;
     height: 100vh;
 }
+
 canvas {
     background: #87ceeb;
     image-rendering: pixelated;
+    border: 2px solid black;
 }
 </style>
 </head>
@@ -23,29 +26,71 @@ canvas {
 <canvas id="game" width="800" height="400"></canvas>
 
 <script>
+/* =====================
+   SETUP BÁSICO
+===================== */
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-const knightIdle = new Image();
+/* =====================
+   SPRITE IDLE
+===================== */
+const idleImage = new Image();
+idleImage.src = "./Sprites/Knight/Idle.png";
 
-// ⚠️ RUTA CORRECTA PARA TU CASO
-knightIdle.src = "./Sprites/Knight/Idle.png";
+const FRAME_WIDTH = 128;
+const FRAME_HEIGHT = 128;
+const TOTAL_FRAMES = 6;
 
-knightIdle.onload = () => {
-    console.log("Imagen cargada OK");
+let currentFrame = 0;
+let frameTimer = 0;
+const FRAME_SPEED = 10; // menor = más rápido
+
+idleImage.onload = () => {
+    requestAnimationFrame(loop);
+};
+
+/* =====================
+   LOOP PRINCIPAL
+===================== */
+function loop() {
+    update();
+    draw();
+    requestAnimationFrame(loop);
+}
+
+/* =====================
+   UPDATE
+===================== */
+function update() {
+    frameTimer++;
+    if (frameTimer >= FRAME_SPEED) {
+        frameTimer = 0;
+        currentFrame++;
+        if (currentFrame >= TOTAL_FRAMES) {
+            currentFrame = 0;
+        }
+    }
+}
+
+/* =====================
+   DRAW
+===================== */
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     ctx.drawImage(
-        knightIdle,
-        0, 0,       // origen sprite
-        128, 128,   // tamaño frame (ajustable)
-        300, 200,   // posición en canvas
-        128, 128
+        idleImage,
+        currentFrame * FRAME_WIDTH,  // X en el sprite
+        0,                           // Y en el sprite
+        FRAME_WIDTH,
+        FRAME_HEIGHT,
+        336,                         // X en pantalla
+        200,                         // Y en pantalla
+        FRAME_WIDTH,
+        FRAME_HEIGHT
     );
-};
-
-knightIdle.onerror = () => {
-    alert("ERROR: no se pudo cargar Idle.png");
-};
+}
 </script>
 
 </body>
