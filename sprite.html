@@ -36,7 +36,7 @@ knightIdle.onload = () => {
 };
 
 knightIdle.onerror = () => {
-    console.error("ERROR: NO SE PUDO CARGAR Sprites/Knight/Igle.png");
+    console.error("ERROR: NO SE PUDO CARGAR Sprites/Knight/Idle.png");
 };
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
@@ -223,11 +223,12 @@ ctx.translate(player.x - cam.x, player.y - cam.y);
 
 ctx.drawImage(
     knightIdle,
-    0, 0,          // frame X, Y (por ahora el primero)
-    64, 64,        // tamaño del frame
-    0, -64,        // posición sobre el jugador
-    64, 64
+    player.x - cam.x,
+    player.y - cam.y - 80,
+    128,
+    128
 );
+
 
 ctx.restore();
 
