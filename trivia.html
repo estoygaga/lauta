@@ -2,30 +2,34 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Trivia Quiz</title>
+<title>Trivia Game</title>
 
 <style>
 body {
     margin: 0;
     height: 100vh;
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #43cea2, #185a9d);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.quiz-card {
+.card {
     background: white;
-    width: 350px;
     padding: 25px;
-    border-radius: 16px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+    border-radius: 15px;
+    width: 350px;
+    box-shadow: 0 15px 40px rgba(0,0,0,.3);
     text-align: center;
 }
 
-.quiz-card h1 {
+h1 {
     margin-top: 0;
+}
+
+#options {
+    margin-top: 15px;
 }
 
 .option {
@@ -33,9 +37,10 @@ body {
     margin: 10px 0;
     padding: 12px;
     border-radius: 10px;
-    background: #f4f4f4;
     border: none;
+    width: 100%;
     cursor: pointer;
+    background: #f1f1f1;
     font-size: 16px;
 }
 
@@ -43,15 +48,117 @@ body {
     background: #ddd;
 }
 
-.correct {
-    background: #4caf50 !important;
-    color: white;
-}
-
-.wrong {
-    background: #f44336 !important;
-    color: white;
-}
-
 #nextBtn {
-    margin-top: 
+    margin-top: 15px;
+    padding: 12px;
+    width: 100%;
+    font-size: 16px;
+    border: none;
+    border-radius: 10px;
+    background: #4caf50;
+    color: white;
+    cursor: pointer;
+    display: none;
+}
+
+#scoreText {
+    margin-top: 10px;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <h1>🧠 Trivia Game</h1>
+
+    <h2 id="question">Pregunta</h2>
+
+    <div id="options"></div>
+
+    <button id="nextBtn">Siguiente</button>
+
+    <p id="scoreText"></p>
+</div>
+
+<script>
+const questions = [
+    {
+        question: "¿Cuál es el planeta más grande del sistema solar?",
+        options: ["Marte", "Júpiter", "Saturno", "Tierra"],
+        correct: 1
+    },
+    {
+        question: "¿En qué año comenzó la Segunda Guerra Mundial?",
+        options: ["1939", "1945", "1918", "1929"],
+        correct: 0
+    },
+    {
+        question: "¿Qué lenguaje se usa para crear páginas web?",
+        options: ["Python", "C++", "HTML", "Java"],
+        correct: 2
+    },
+    {
+        question: "¿Quién pintó la Mona Lisa?",
+        options: ["Van Gogh", "Picasso", "Leonardo da Vinci", "Miguel Ángel"],
+        correct: 2
+    }
+];
+
+let currentQuestion = 0;
+let score = 0;
+
+const questionText = document.getElementById("question");
+const optionsDiv = document.getElementById("options");
+const nextBtn = document.getElementById("nextBtn");
+const scoreText = document.getElementById("scoreText");
+
+loadQuestion();
+
+function loadQuestion() {
+    nextBtn.style.display = "none";
+    optionsDiv.innerHTML = "";
+
+    const q = questions[currentQuestion];
+    questionText.textContent = q.question;
+
+    q.options.forEach((option, index) => {
+        const btn = document.createElement("button");
+        btn.textContent = option;
+        btn.className = "option";
+        btn.onclick = () => selectAnswer(index);
+        optionsDiv.appendChild(btn);
+    });
+}
+
+function selectAnswer(index) {
+    const correct = questions[currentQuestion].correct;
+
+    if (index === correct) {
+        score++;
+        scoreText.textContent = "✅ Correcto";
+    } else {
+        scoreText.textContent = "❌ Incorrecto";
+    }
+
+    nextBtn.style.display = "block";
+}
+
+nextBtn.onclick = () => {
+    currentQuestion++;
+    scoreText.textContent = "";
+
+    if (currentQuestion < questions.length) {
+        loadQuestion();
+    } else {
+        questionText.textContent = "🎉 Juego terminado";
+        optionsDiv.innerHTML = "";
+        nextBtn.style.display = "none";
+        scoreText.textContent = `Puntaje final: ${score} / ${questions.length}`;
+    }
+};
+</script>
+
+</body>
+</html>
