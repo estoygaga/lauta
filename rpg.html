@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini RPG</title>
+
+<style>
+body {
+    margin: 0;
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+}
+
+.game {
+    background: #222;
+    padding: 15px;
+    border-radius: 12px;
+    color: #fff;
+    width: 90%;
+    max-width: 400px;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.map {
+    display: grid;
+    grid-template-columns: repeat(5, 60px);
+    grid-template-rows: repeat(5, 60px);
+    gap: 5px;
+    justify-content: center;
+}
+
+.cell {
+    width: 60px;
+    height: 60px;
+    background: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    border-radius: 6px;
+}
+
+.player {
+    background: #4caf50;
+}
+
+.enemy {
+    background: #f44336;
+}
+
+.controls {
+    margin-top: 15px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+button {
+    padding: 12px;
+    font-size: 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="game">
+    <div class="stats">
+        <div>❤️ Vida: <span id="hp">100</span></div>
+        <div>⚔️ Ataque: 10</div>
+    </div>
+
+    <div class="map" id="map"></div>
+
+    <div class="controls">
+        <div></div>
+        <button onclick="move(0,-1)">⬆️</button>
+        <div></div>
+
+        <button onclick="move(-1,0)">⬅️</button>
+        <div></div>
+        <button onclick="move(1,0)">➡️</button>
+
+        <div></div>
+        <button onclick="move(0,1)">⬇️</button>
+        <div></div>
+    </div>
+</div>
+
+<script>
+const mapSize = 5;
+
+let player = {
+    x: 2,
+    y: 2,
+    hp: 100,
+    attack: 10
+};
+
+let enemy = {
+    x: 4,
+    y: 4,
+    hp: 30
+};
+
+const mapEl = document.getElementById("map");
+const hpEl = document.getElementById("hp");
+
+function drawMap() {
+    mapEl.innerHTML = "";
+
+    for (let y = 0; y < mapSize; y++) {
+        for (let x = 0; x < mapSize; x++) {
+            const cell = document.createElement("div");
+            cell.classList.add("cell");
+
+            if (x === player.x && y === player.y) {
+                cell.classList.add("player");
+                cell.textContent = "🙂";
+            } 
+            else if (x === enemy.x && y === enemy.y && enemy.hp > 0) {
+                cell.classList.add("enemy");
+                cell.textContent = "👾";
+            }
+
+            mapEl.appendChild(cell);
+        }
+    }
+}
+
+function move(dx, dy) {
+    const newX = player.x + dx;
+    const newY = player.y + dy;
+
+    if (newX < 0 || newX >= mapSize || newY < 0 || newY >= mapSize) return;
+
+    player.x = newX;
+    player.y = newY;
+
+    checkCombat();
+    drawMap();
+}
+
+function checkCombat() {
+    if (player.x === enemy.x && player.y === enemy.y && enemy.hp > 0) {
+        enemy.hp -= player.attack;
+        player.hp -= 5;
+
+        hpEl.textContent = player.hp;
+
+        if (enemy.hp <= 0) {
+            alert("🎉 ¡Derrotaste al enemigo!");
+        }
+
+        if (player.hp <= 0) {
+            alert("💀 Has sido derrotado");
+            location.reload();
+        }
+    }
+}
+
+drawMap();
+</script>
+
+</body>
+</html>
