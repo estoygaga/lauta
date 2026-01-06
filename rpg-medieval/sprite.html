@@ -18,32 +18,12 @@ canvas {
     background: linear-gradient(#6ec6ff, #b3e5fc);
     image-rendering: pixelated;
 }
-
-#gameOver {
-    position: absolute;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    color: white;
-    font-family: Arial;
-}
-
-#gameOver button {
-    padding: 10px 20px;
-    font-size: 18px;
-    cursor: pointer;
-}
 </style>
 </head>
 
 <body>
 
 <canvas id="game" width="1000" height="500"></canvas>
-
-<div id="gameOver">
-    <h1>GAME OVER</h1>
-    <button onclick="respawn()">RESPAWN</button>
-</div>
 
 <script>
 const canvas = document.getElementById("game");
@@ -60,10 +40,7 @@ const sprites = {
     run:     { img: "Sprites/Knight/Run.png", frames: 8 },
     jump:    { img: "Sprites/Knight/Jump.png", frames: 10 },
     attack1: { img: "Sprites/Knight/Attack_1.png", frames: 4 },
-    attack2: { img: "Sprites/Knight/Attack_2.png", frames: 3 },
-    kick:    { img: "Sprites/Knight/Attack_3.png", frames: 4 },
-    shield:  { img: "Sprites/Knight/Shield.png", frames: 2 },
-    dead:    { img: "Sprites/Knight/Dead.png", frames: 3 }
+    attack2: { img: "Sprites/Knight/Attack_2.png", frames: 3 }
 };
 
 for (let s in sprites) {
@@ -88,21 +65,16 @@ const player = {
     frame: 0,
     frameTime: 0,
     facing: 1,
-    alive: true,
-
-    // 🔑 combate
     isAttacking: false,
-    attackToggle: false
+    attackToggle: false,
+    damage: 10
 };
 
 // =======================
 // ENEMY
 // =======================
-const enemySprite = {
-    image: new Image(),
-    frames: 6
-};
-enemySprite.image.src = "Sprites/Knight/Enemy/Idle.png";
+const enemySprite = new Image();
+enemySprite.src = "Sprites/Knight/Enemy/Idle.png";
 
 const enemy = {
     x: 650,
@@ -111,7 +83,9 @@ const enemy = {
     h: 96,
     frame: 0,
     frameTime: 0,
-    facing: -1
+    facing: -1,
+    life: 100,
+    hitCooldown: 0
 };
 
 // =======================
@@ -125,11 +99,9 @@ window.addEventListener("keyup", e => keys[e.key] = false);
 // UPDATE
 // =======================
 function update() {
-    if (!player.alive) return;
 
     player.vx = 0;
 
-    // 🔒 BLOQUEO DE MOVIMIENTO SI ATACA
     if (!player.isAttacking) {
 
         if (keys["a"]) {
@@ -150,21 +122,13 @@ function update() {
             player.state = "jump";
         }
 
-        // ⚔️ ATAQUE (UNA SOLA VEZ)
         if (keys["j"] && !player.isAttacking) {
             player.isAttacking = true;
             player.frame = 0;
-            player.frameTime = 0;
             player.state = player.attackToggle ? "attack2" : "attack1";
         }
-
-        if (keys["k"]) player.state = "kick";
-        if (keys["s"]) player.state = "shield";
     }
 
-    if (keys["x"]) die();
-
-    // FÍSICA
     player.vy += gravity;
     player.x += player.vx;
     player.y += player.vy;
@@ -175,8 +139,44 @@ function update() {
         player.grounded = true;
     }
 
+    handleHit();
     animatePlayer();
     animateEnemy();
+}
+
+// =======================
+// HITBOX + DAÑO
+// =======================
+function handleHit() {
+
+    if (!player.isAttacking) return;
+    if (enemy.life <= 0) return;
+    if (enemy.hitCooldown > 0) {
+        enemy.hitCooldown--;
+        return;
+    }
+
+    const hitbox = {
+        x: player.facing === 1 ? player.x + player.w : player.x - 40,
+        y: player.y + 20,
+        w: 40,
+        h: 40
+    };
+
+    if (rectsOverlap(hitbox, enemy)) {
+        enemy.life -= player.damage;
+        enemy.hitCooldown = 20;
+        console.log("Enemy life:", enemy.life);
+    }
+}
+
+function rectsOverlap(a, b) {
+    return (
+        a.x < b.x + b.w &&
+        a.x + a.w > b.x &&
+        a.y < b.y + b.h &&
+        a.y + a.h > b.y
+    );
 }
 
 // =======================
@@ -190,8 +190,6 @@ function animatePlayer() {
 
         if (player.frame >= max) {
             player.frame = 0;
-
-            // 🔚 FIN DE ATAQUE AUTOMÁTICO
             if (player.state === "attack1" || player.state === "attack2") {
                 player.isAttacking = false;
                 player.attackToggle = !player.attackToggle;
@@ -206,7 +204,7 @@ function animateEnemy() {
     enemy.frameTime++;
     if (enemy.frameTime > 10) {
         enemy.frame++;
-        if (enemy.frame >= enemySprite.frames) enemy.frame = 0;
+        if (enemy.frame >= 6) enemy.frame = 0;
         enemy.frameTime = 0;
     }
 }
@@ -215,9 +213,8 @@ function animateEnemy() {
 // DRAW
 // =======================
 function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    // SUELO
     ctx.fillStyle = "#3e7c3e";
     ctx.fillRect(0, groundY, canvas.width, 50);
 
@@ -231,15 +228,21 @@ function draw() {
         player.facing
     );
 
-    drawSprite(
-        enemySprite.image,
-        enemy.frame,
-        enemy.x,
-        enemy.y,
-        enemy.w,
-        enemy.h,
-        enemy.facing
-    );
+    if (enemy.life > 0) {
+        drawSprite(
+            enemySprite,
+            enemy.frame,
+            enemy.x,
+            enemy.y,
+            enemy.w,
+            enemy.h,
+            enemy.facing
+        );
+
+        // VIDA ENEMIGO
+        ctx.fillStyle = "red";
+        ctx.fillRect(enemy.x, enemy.y - 10, enemy.w * (enemy.life / 100), 5);
+    }
 }
 
 function drawSprite(img, frame, x, y, w, h, facing) {
@@ -255,25 +258,6 @@ function drawSprite(img, frame, x, y, w, h, facing) {
         w, h
     );
     ctx.restore();
-}
-
-// =======================
-// DEATH
-// =======================
-function die() {
-    player.alive = false;
-    player.state = "dead";
-    document.getElementById("gameOver").style.display = "flex";
-}
-
-function respawn() {
-    player.x = 150;
-    player.y = groundY - 96;
-    player.vx = 0;
-    player.vy = 0;
-    player.alive = true;
-    player.state = "idle";
-    document.getElementById("gameOver").style.display = "none";
 }
 
 // =======================
