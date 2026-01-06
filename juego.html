@@ -91,9 +91,12 @@ body {
     <p>Haz la mayor cantidad de clics en 10 segundos</p>
 
     <div class="stats">
-        <div class="stat">⏱ <span id="timer">10</span>s</div>
-        <div class="stat">⭐ <span id="score">0</span></div>
-    </div>
+        <div class="stats">
+    <div class="stat">🔥 Nivel <span id="level">1</span></div>
+    <div class="stat">⏱ <span id="timer">10</span>s</div>
+    <div class="stat">⭐ <span id="score">0</span></div>
+</div>
+
 
     <button id="gameBtn">¡Empezar!</button>
     <button id="restartBtn">🔄 Jugar de nuevo</button>
@@ -103,26 +106,30 @@ body {
 </div>
 
 
+
 <script>
+let level = 1;
 let score = 0;
 let timeLeft = 10;
 let gameActive = false;
+let timer;
 let timerStarted = false;
 
 const btn = document.getElementById("gameBtn");
 const restartBtn = document.getElementById("restartBtn");
 const scoreText = document.getElementById("score");
 const timerText = document.getElementById("timer");
-const rankingList = document.getElementById("ranking");
+const levelText = document.getElementById("level");
 
-let ranking = JSON.parse(localStorage.getItem("ranking")) || [];
-renderRanking();
+const levels = {
+    1: { time: 10, required: 30 },
+    2: { time: 8, required: 25 },
+    3: { time: 5, required: 20 }
+};
 
 btn.addEventListener("click", () => {
     if (!gameActive) {
-        gameActive = true;
-        startTimer();
-        btn.textContent = "¡Click!";
+        startLevel();
     }
     if (gameActive) {
         score++;
@@ -130,48 +137,53 @@ btn.addEventListener("click", () => {
     }
 });
 
-function startTimer() {
-    if (timerStarted) return;
+function startLevel() {
+    gameActive = true;
     timerStarted = true;
+    btn.textContent = "¡Click!";
+    timeLeft = levels[level].time;
+    timerText.textContent = timeLeft;
 
-    const timer = setInterval(() => {
+    timer = setInterval(() => {
         timeLeft--;
         timerText.textContent = timeLeft;
 
         if (timeLeft <= 0) {
             clearInterval(timer);
-            endGame();
+            checkLevel();
         }
     }, 1000);
+}
+
+function checkLevel() {
+    if (score >= levels[level].required) {
+        if (level < 3) {
+            level++;
+            levelText.textContent = level;
+            alert("🔥 ¡Nivel superado!");
+            score = 0;
+            scoreText.textContent = score;
+            startLevel();
+        } else {
+            alert("🏆 ¡Ganaste el juego!");
+            endGame();
+        }
+    } else {
+        endGame();
+    }
 }
 
 function endGame() {
     gameActive = false;
     btn.disabled = true;
     restartBtn.style.display = "block";
-
-    const name = prompt("🏅 Tu nombre:");
-    if (!name) return;
-
-    ranking.push({ name, score });
-    ranking.sort((a, b) => b.score - a.score);
-    ranking = ranking.slice(0, 5);
-
-    localStorage.setItem("ranking", JSON.stringify(ranking));
-    renderRanking();
-}
-
-function renderRanking() {
-    rankingList.innerHTML = "";
-    ranking.forEach((r, i) => {
-        rankingList.innerHTML += `<li>${i + 1}. ${r.name} — ${r.score}</li>`;
-    });
 }
 
 restartBtn.addEventListener("click", () => {
     location.reload();
 });
 </script>
+
 
 
 
