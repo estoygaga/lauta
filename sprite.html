@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>RPG 2D Lateral</title>
+<style>
+    body {
+        margin: 0;
+        background: #222;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+    }
+
+    canvas {
+        background: linear-gradient(#5cc0ff, #b3e5fc);
+        border: 3px solid #000;
+        image-rendering: pixelated;
+    }
+</style>
+</head>
+<body>
+
+<canvas id="game" width="800" height="400"></canvas>
+
+<script>
+/* ========================
+   CONFIGURACIÓN GENERAL
+======================== */
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const gravity = 0.6;
+const groundY = 330;
+
+/* ========================
+   CONTROLES
+======================== */
+const keys = {
+    left: false,
+    right: false,
+    jump: false
+};
+
+document.addEventListener("keydown", e => {
+    if (e.code === "ArrowLeft") keys.left = true;
+    if (e.code === "ArrowRight") keys.right = true;
+    if (e.code === "Space") keys.jump = true;
+});
+
+document.addEventListener("keyup", e => {
+    if (e.code === "ArrowLeft") keys.left = false;
+    if (e.code === "ArrowRight") keys.right = false;
+    if (e.code === "Space") keys.jump = false;
+});
+
+/* ========================
+   JUGADOR
+======================== */
+const player = {
+    x: 100,
+    y: groundY,
+    width: 32,
+    height: 48,
+    vx: 0,
+    vy: 0,
+    speed: 3,
+    jumping: false,
+    direction: 1,
+    frame: 0,
+    frameTimer: 0
+};
+
+/* ========================
+   ACTUALIZAR JUGADOR
+======================== */
+function updatePlayer() {
+    player.vx = 0;
+
+    if (keys.left) {
+        player.vx = -player.speed;
+        player.direction = -1;
+    }
+    if (keys.right) {
+        player.vx = player.speed;
+        player.direction = 1;
+    }
+
+    if (keys.jump && !player.jumping) {
+        player.vy = -12;
+        player.jumping = true;
+    }
+
+    player.vy += gravity;
+
+    player.x += player.vx;
+    player.y += player.vy;
+
+    if (player.y >= groundY) {
+        player.y = groundY;
+        player.vy = 0;
+        player.jumping = false;
+    }
+
+    // Animación
+    if (player.vx !== 0) {
+        player.frameTimer++;
+        if (player.frameTimer > 10) {
+            player.frame = (player.frame + 1) % 4;
+            player.frameTimer = 0;
+        }
+    } else {
+        player.frame = 0;
+    }
+}
+
+/* ========================
+   DIBUJAR JUGADOR (SPRITE)
+======================== */
+function drawPlayer() {
+    ctx.save();
+    ctx.translate(player.x + player.width / 2, player.y);
+
+    ctx.scale(player.direction, 1);
+
+    ctx.fillStyle = "#000";
+    ctx.fillRect(-player.width / 2, -player.height, player.width, player.height);
+
+    // Ojos (detalle)
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(4, -36, 6, 6);
+
+    ctx.restore();
+}
+
+/* ========================
+   DIBUJAR SUELO
+======================== */
+function drawGround() {
+    ctx.fillStyle = "#3e7c17";
+    ctx.fillRect(0, groundY + 20, canvas.width, canvas.height);
+}
+
+/* ========================
+   LOOP DEL JUEGO
+======================== */
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    drawGround();
+    updatePlayer();
+    drawPlayer();
+
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+
+</body>
+</html>
+
