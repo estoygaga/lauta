@@ -3,45 +3,105 @@
 <head>
 <meta charset="UTF-8">
 <title>RPG Medieval 2D</title>
+
 <style>
 body {
     margin: 0;
-    background: #111;
+    background: #222;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    overflow: hidden;
 }
+
 canvas {
-    border: 3px solid black;
-    image-rendering: pixelated;
+    border: 2px solid #000;
     background: #87ceeb;
+    image-rendering: pixelated;
 }
 </style>
 </head>
 <body>
 
-<canvas id="game" width="800" height="400"></canvas>
+<canvas id="game" width="400" height="300"></canvas>
 
 <script>
+// ===============================
+// CONFIG CANVAS
+// ===============================
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 
-const img = new Image();
-img.src = "Sprites/Knight/Idle.png";
+// ===============================
+// SPRITE IDLE
+// ===============================
+const idleSprite = new Image();
+idleSprite.src = "Sprites/Knight/Idle.png";
 
-img.onload = () => {
-    console.log("IMAGEN CARGADA");
-    ctx.drawImage(img, 50, 50);
+// Datos REALES de tu imagen
+const FRAME_WIDTH = 128;
+const FRAME_HEIGHT = 128;
+const TOTAL_FRAMES = 6;
+
+// Animación
+let frame = 0;
+let frameTimer = 0;
+const FRAME_SPEED = 10;
+
+// Posición del jugador
+const player = {
+    x: 100,
+    y: 140,
+    width: 128,
+    height: 128
 };
 
-img.onerror = () => {
-    console.error("NO SE CARGO LA IMAGEN");
+// ===============================
+// DIBUJAR JUGADOR
+// ===============================
+function drawPlayer() {
+    ctx.drawImage(
+        idleSprite,
+        frame * FRAME_WIDTH, 0,
+        FRAME_WIDTH, FRAME_HEIGHT,
+        player.x, player.y,
+        FRAME_WIDTH, FRAME_HEIGHT
+    );
+}
+
+// ===============================
+// ACTUALIZAR ANIMACIÓN
+// ===============================
+function updateAnimation() {
+    frameTimer++;
+    if (frameTimer >= FRAME_SPEED) {
+        frame = (frame + 1) % TOTAL_FRAMES;
+        frameTimer = 0;
+    }
+}
+
+// ===============================
+// GAME LOOP
+// ===============================
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    updateAnimation();
+    drawPlayer();
+    requestAnimationFrame(gameLoop);
+}
+
+// ===============================
+// INICIAR CUANDO CARGA LA IMAGEN
+// ===============================
+idleSprite.onload = () => {
+    console.log("Sprite Idle cargado correctamente");
+    gameLoop();
 };
 
-
+idleSprite.onerror = () => {
+    console.error("ERROR: no se pudo cargar Idle.png");
+};
 </script>
 
 </body>
