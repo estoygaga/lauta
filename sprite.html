@@ -11,6 +11,7 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
+    overflow: hidden;
 }
 canvas {
     border: 3px solid black;
@@ -24,11 +25,18 @@ canvas {
 <canvas id="game" width="800" height="400"></canvas>
 
 <script>
+/* ======================
+   CONFIGURACIÓN
+====================== */
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 const TILE = 32;
 const gravity = 0.6;
+
+const RESPAWN_X = 200;
+const RESPAWN_Y = 0;
+const DEATH_Y = 600;
 
 /* ======================
    MAPA MEDIEVAL
@@ -48,23 +56,35 @@ const map = [
    JUGADOR (CABALLERO)
 ====================== */
 const player = {
-    x: 200,
-    y: 0,
+    x: RESPAWN_X,
+    y: RESPAWN_Y,
     w: 28,
     h: 40,
     vx: 0,
     vy: 0,
     speed: 3,
     jumping: false,
-    dir: 1
+    dir: 1,
+    attacking: false,
+    attackTimer: 0
 };
 
 /* ======================
-   CONTROLES
+   CONTROLES (SIN SCROLL)
 ====================== */
 const keys = {};
-document.addEventListener("keydown", e => keys[e.code] = true);
-document.addEventListener("keyup", e => keys[e.code] = false);
+document.addEventListener("keydown", e => {
+    if (["ArrowLeft","ArrowRight","Space","KeyZ"].includes(e.code)) {
+        e.preventDefault();
+    }
+    keys[e.code] = true;
+});
+document.addEventListener("keyup", e => {
+    if (["ArrowLeft","ArrowRight","Space","KeyZ"].includes(e.code)) {
+        e.preventDefault();
+    }
+    keys[e.code] = false;
+});
 
 /* ======================
    COLISIONES
@@ -107,27 +127,48 @@ function update() {
         player.vx = player.speed;
         player.dir = 1;
     }
+
     if (keys["Space"] && !player.jumping) {
         player.vy = -12;
         player.jumping = true;
+    }
+
+    // Ataque
+    if (keys["KeyZ"] && !player.attacking) {
+        player.attacking = true;
+        player.attackTimer = 15;
+    }
+
+    if (player.attacking) {
+        player.attackTimer--;
+        if (player.attackTimer <= 0) {
+            player.attacking = false;
+        }
     }
 
     player.vy += gravity;
 
     // Movimiento X
     player.x += player.vx;
-    let hitX = collide(player);
-    if (hitX) player.x -= player.vx;
+    if (collide(player)) player.x -= player.vx;
 
     // Movimiento Y
     player.y += player.vy;
-    let hitY = collide(player);
-    if (hitY) {
+    const hit = collide(player);
+    if (hit) {
         if (player.vy > 0) {
-            player.y = hitY.y - player.h;
+            player.y = hit.y - player.h;
             player.jumping = false;
         }
         player.vy = 0;
+    }
+
+    // Respawn al caer
+    if (player.y > DEATH_Y) {
+        player.x = RESPAWN_X;
+        player.y = RESPAWN_Y;
+        player.vy = 0;
+        player.jumping = false;
     }
 }
 
@@ -166,15 +207,26 @@ function draw() {
         }
     }
 
-    // Caballero (placeholder)
+    // Caballero
     ctx.save();
     ctx.translate(player.x - cam.x + player.w/2, player.y - cam.y);
     ctx.scale(player.dir,1);
     ctx.fillStyle = "#2c2c2c";
     ctx.fillRect(-player.w/2, -player.h, player.w, player.h);
     ctx.fillStyle = "#ccc";
-    ctx.fillRect(-10, -30, 20, 10); // casco
+    ctx.fillRect(-10, -30, 20, 10);
     ctx.restore();
+
+    // Espada (hitbox)
+    if (player.attacking) {
+        ctx.fillStyle = "rgba(255,0,0,0.5)";
+        ctx.fillRect(
+            player.x - cam.x + (player.dir === 1 ? player.w : -20),
+            player.y - cam.y - 30,
+            20,
+            10
+        );
+    }
 }
 
 /* ======================
