@@ -35,11 +35,13 @@ const idleImage   = new Image();
 const runImage    = new Image();
 const jumpImage   = new Image();
 const attackImage = new Image();
+const kickImage   = new Image();
 
 idleImage.src   = "./Sprites/Knight/Idle.png";
 runImage.src    = "./Sprites/Knight/Run.png";
 jumpImage.src   = "./Sprites/Knight/Jump.png";
-attackImage.src = "./Sprites/Knight/Attack_1.png";
+attackImage.src = "./Sprites/Knight/Attack_1.png"; // espada
+kickImage.src   = "./Sprites/Knight/Attack_3.png"; // patada
 
 /* =====================
    SPRITE DATA
@@ -51,6 +53,7 @@ const IDLE_FRAMES   = 6;
 const RUN_FRAMES    = 8;
 const JUMP_FRAMES   = 10;
 const ATTACK_FRAMES = 4;
+const KICK_FRAMES   = 4;
 
 let currentFrame = 0;
 let frameTimer   = 0;
@@ -70,10 +73,11 @@ const player = {
     y: groundY,
     vy: 0,
     speed: 3,
-    direction: 1,   // 1 derecha, -1 izquierda
+    direction: 1,
     moving: false,
     jumping: false,
-    attacking: false
+    attacking: false,
+    kicking: false
 };
 
 /* =====================
@@ -101,15 +105,22 @@ function loop() {
 function update() {
     player.moving = false;
 
-    // ATAQUE (Z)
-    if (keys["KeyZ"] && !player.attacking && !player.jumping) {
+    // ATAQUE ESPADA (Z)
+    if (keys["KeyZ"] && !player.attacking && !player.kicking && !player.jumping) {
         player.attacking = true;
         currentFrame = 0;
         frameTimer = 0;
     }
 
-    // Movimiento horizontal (bloqueado al atacar)
-    if (!player.attacking) {
+    // PATADA (X)
+    if (keys["KeyX"] && !player.kicking && !player.attacking && !player.jumping) {
+        player.kicking = true;
+        currentFrame = 0;
+        frameTimer = 0;
+    }
+
+    // Movimiento (bloqueado al atacar)
+    if (!player.attacking && !player.kicking) {
         if (keys["ArrowRight"]) {
             player.x += player.speed;
             player.direction = 1;
@@ -122,8 +133,8 @@ function update() {
         }
     }
 
-    // Salto (bloqueado al atacar)
-    if (keys["Space"] && !player.jumping && !player.attacking) {
+    // Salto
+    if (keys["Space"] && !player.jumping && !player.attacking && !player.kicking) {
         player.vy = -12;
         player.jumping = true;
         currentFrame = 0;
@@ -150,12 +161,17 @@ function update() {
 
         let maxFrames = IDLE_FRAMES;
         if (player.attacking) maxFrames = ATTACK_FRAMES;
+        else if (player.kicking) maxFrames = KICK_FRAMES;
         else if (player.jumping) maxFrames = JUMP_FRAMES;
         else if (player.moving) maxFrames = RUN_FRAMES;
 
-        // Fin del ataque
+        // Fin ataques
         if (player.attacking && currentFrame >= ATTACK_FRAMES) {
             player.attacking = false;
+            currentFrame = 0;
+        }
+        if (player.kicking && currentFrame >= KICK_FRAMES) {
+            player.kicking = false;
             currentFrame = 0;
         }
 
@@ -171,6 +187,7 @@ function draw() {
 
     let sprite = idleImage;
     if (player.attacking) sprite = attackImage;
+    else if (player.kicking) sprite = kickImage;
     else if (player.jumping) sprite = jumpImage;
     else if (player.moving) sprite = runImage;
 
