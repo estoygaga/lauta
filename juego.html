@@ -86,24 +86,23 @@ body {
 
 </head>
 <body>
+
 <div class="game-card">
     <h1>🎮 Click Challenge</h1>
-    <p>Haz la mayor cantidad de clics en 10 segundos</p>
+    <p>Haz la mayor cantidad de clics antes de que termine el tiempo</p>
 
     <div class="stats">
-        <div class="stats">
-    <div class="stat">🔥 Nivel <span id="level">1</span></div>
-    <div class="stat">⏱ <span id="timer">10</span>s</div>
-    <div class="stat">⭐ <span id="score">0</span></div>
-    
+        <div class="stat">🔥 Nivel <span id="level">1</span></div>
+        <div class="stat">⏱ <span id="timer">10</span>s</div>
+        <div class="stat">⭐ <span id="score">0</span></div>
+    </div>
+
     <button id="gameBtn">¡Empezar!</button>
     <button id="restartBtn">🔄 Jugar de nuevo</button>
+
     <h3>🏆 Ranking</h3>
-<ul id="ranking"></ul>
-
+    <ul id="ranking"></ul>
 </div>
-
-
 
 <script>
 let level = 1;
@@ -111,7 +110,6 @@ let score = 0;
 let timeLeft = 10;
 let gameActive = false;
 let timer;
-let timerStarted = false;
 
 const btn = document.getElementById("gameBtn");
 const restartBtn = document.getElementById("restartBtn");
@@ -137,7 +135,6 @@ btn.addEventListener("click", () => {
 
 function startLevel() {
     gameActive = true;
-    timerStarted = true;
     btn.textContent = "¡Click!";
     timeLeft = levels[level].time;
     timerText.textContent = timeLeft;
@@ -182,9 +179,6 @@ restartBtn.addEventListener("click", () => {
 });
 </script>
 
-
-
-
-
 </body>
+
 </html>
