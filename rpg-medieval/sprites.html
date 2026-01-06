@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>RPG Medieval 2D</title>
-
 <style>
 body {
     margin: 0;
@@ -12,84 +11,40 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
+    overflow: hidden;
 }
-
 canvas {
     border: 3px solid black;
-    background: #87ceeb;
     image-rendering: pixelated;
+    background: #87ceeb;
 }
 </style>
 </head>
 <body>
 
-<canvas id="game" width="400" height="300"></canvas>
+<canvas id="game" width="800" height="400"></canvas>
 
 <script>
-/* ======================
-   CANVAS
-====================== */
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 
-/* ======================
-   SPRITE IDLE
-====================== */
-const idleImg = new Image();
-idleImg.src = "Sprites/Knight/Idle.png";
+const img = new Image();
+img.src = "Sprites/Knight/Idle.png";
 
-/*
-AJUSTA ESTO SI TU SPRITE ES DIFERENTE
-(64x64 es lo más común)
-*/
-const FRAME_WIDTH = 64;
-const FRAME_HEIGHT = 64;
-const TOTAL_FRAMES = 6;
-
-let currentFrame = 0;
-let frameTimer = 0;
-const FRAME_SPEED = 10;
-
-/* ======================
-   LOOP
-====================== */
-function loop() {
-    frameTimer++;
-    if (frameTimer >= FRAME_SPEED) {
-        frameTimer = 0;
-        currentFrame = (currentFrame + 1) % TOTAL_FRAMES;
-    }
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    ctx.drawImage(
-        idleImg,
-        currentFrame * FRAME_WIDTH,
-        0,
-        FRAME_WIDTH,
-        FRAME_HEIGHT,
-        168,
-        118,
-        FRAME_WIDTH,
-        FRAME_HEIGHT
-    );
-
-    requestAnimationFrame(loop);
-}
-
-/* ======================
-   START
-====================== */
-idleImg.onload = () => {
-    console.log("Idle cargado correctamente");
-    loop();
+img.onload = () => {
+    console.log("IMAGEN CARGADA");
+    ctx.drawImage(img, 50, 50);
 };
 
-idleImg.onerror = () => {
-    console.error("ERROR: no se pudo cargar Sprites/Knight/Idle.png");
+img.onerror = () => {
+    console.error("NO SE CARGO LA IMAGEN");
 };
+
+
 </script>
 
 </body>
 </html>
+
+
