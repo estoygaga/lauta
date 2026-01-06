@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>RPG Medieval - Idle</title>
+<title>RPG Medieval</title>
 
 <style>
 body {
@@ -26,32 +26,51 @@ canvas {
 <canvas id="game" width="800" height="400"></canvas>
 
 <script>
-/* =====================
-   SETUP BÁSICO
-===================== */
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 /* =====================
-   SPRITE IDLE
+   IMÁGENES
 ===================== */
 const idleImage = new Image();
 idleImage.src = "./Sprites/Knight/Idle.png";
 
+const runImage = new Image();
+runImage.src = "./Sprites/Knight/Run.png";
+
+/* =====================
+   SPRITE DATA
+===================== */
 const FRAME_WIDTH = 128;
 const FRAME_HEIGHT = 128;
-const TOTAL_FRAMES = 6;
+const IDLE_FRAMES = 6;
+const RUN_FRAMES = 8;
 
 let currentFrame = 0;
 let frameTimer = 0;
-const FRAME_SPEED = 10; // menor = más rápido
+const FRAME_SPEED = 8;
 
-idleImage.onload = () => {
-    requestAnimationFrame(loop);
+/* =====================
+   PLAYER
+===================== */
+const player = {
+    x: 336,
+    y: 200,
+    speed: 3,
+    moving: false,
+    direction: 1 // 1 = derecha, -1 = izquierda
 };
 
 /* =====================
-   LOOP PRINCIPAL
+   INPUT
+===================== */
+const keys = {};
+
+window.addEventListener("keydown", e => keys[e.key] = true);
+window.addEventListener("keyup", e => keys[e.key] = false);
+
+/* =====================
+   LOOP
 ===================== */
 function loop() {
     update();
@@ -63,13 +82,26 @@ function loop() {
    UPDATE
 ===================== */
 function update() {
+    player.moving = false;
+
+    if (keys["ArrowRight"]) {
+        player.x += player.speed;
+        player.direction = 1;
+        player.moving = true;
+    }
+
+    if (keys["ArrowLeft"]) {
+        player.x -= player.speed;
+        player.direction = -1;
+        player.moving = true;
+    }
+
     frameTimer++;
     if (frameTimer >= FRAME_SPEED) {
         frameTimer = 0;
         currentFrame++;
-        if (currentFrame >= TOTAL_FRAMES) {
-            currentFrame = 0;
-        }
+        const maxFrames = player.moving ? RUN_FRAMES : IDLE_FRAMES;
+        if (currentFrame >= maxFrames) currentFrame = 0;
     }
 }
 
@@ -79,18 +111,30 @@ function update() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    const sprite = player.moving ? runImage : idleImage;
+
+    ctx.save();
+    ctx.scale(player.direction, 1);
+
     ctx.drawImage(
-        idleImage,
-        currentFrame * FRAME_WIDTH,  // X en el sprite
-        0,                           // Y en el sprite
+        sprite,
+        currentFrame * FRAME_WIDTH,
+        0,
         FRAME_WIDTH,
         FRAME_HEIGHT,
-        336,                         // X en pantalla
-        200,                         // Y en pantalla
+        player.direction === 1 ? player.x : -player.x - FRAME_WIDTH,
+        player.y,
         FRAME_WIDTH,
         FRAME_HEIGHT
     );
+
+    ctx.restore();
 }
+
+/* =====================
+   START
+===================== */
+loop();
 </script>
 
 </body>
