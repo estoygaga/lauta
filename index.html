@@ -1,11 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>El Sapo Pepe</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Sapo Pepe</title>
 
-    
 <style>
 body {
     margin: 0;
@@ -14,33 +14,49 @@ body {
     color: #fff;
 }
 
+/* HEADER */
 header {
     text-align: center;
-    padding: 40px 20px;
+    padding: 50px 20px 30px;
 }
 
 header h1 {
     margin: 0;
-    font-size: 36px;
+    font-size: 38px;
 }
 
-header p {
-    opacity: 0.9;
+/* NAV */
+nav {
+    text-align: center;
+    margin-bottom: 30px;
 }
 
+nav a {
+    color: #fff;
+    margin: 0 12px;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+/* MAIN */
 .main {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
     gap: 25px;
-    padding: 30px;
+    padding: 20px;
 }
 
+/* CARD */
 .card {
     background: #ffffff;
     color: #333;
     width: 260px;
-    padding: 20px;
+    padding: 22px;
     border-radius: 16px;
     text-align: center;
     box-shadow: 0 15px 40px rgba(0,0,0,.3);
@@ -55,68 +71,73 @@ header p {
     margin-top: 0;
 }
 
+.card p {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
 .card button {
     margin-top: 15px;
     padding: 12px;
     width: 100%;
     font-size: 16px;
     border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
 
-    </style>
-    
-
-
+/* FOOTER */
+footer {
+    text-align: center;
+    padding: 20px;
+    opacity: 0.8;
+}
+</style>
 </head>
-
 
 <body>
 
 <header>
-    <h1>El Sapo Pepe</h1>
+    <h1>🐸 El Sapo Pepe</h1>
+    <p>Mini juegos y diversión</p>
 </header>
 
 <nav>
     <a href="#">Inicio</a>
     <a href="#">Sobre mí</a>
-    <a href="#">Servicios</a>
     <a href="#">Contacto</a>
-
-    <button id="menuBtn">☰ Menú</button>
-
-    <div id="menu" class="menu">
-        <a href="#">Opción 1</a>
-        <a href="#">Opción 2</a>
-        <a href="#">Opción 3</a>
-    </div>
 </nav>
-<div class="content">
-    <h2>MINI JUEGOS</h2>
 
-    <br><br>
+<div class="main">
 
-<a href="juego.html">
-        <button>🎮 Click Challenge</button>
-    </a>
+    <div class="card">
+        <h3>🎮 Click Challenge</h3>
+        <p>Probá qué tan rápido sos haciendo clics</p>
+        <a href="juego.html">
+            <button>Jugar</button>
+        </a>
+    </div>
 
-<br><br>
-<a href="trivia.html">
-        <button>🧠 Trivia Game</button>
-    </a>
+    <div class="card">
+        <h3>🧠 Trivia Game</h3>
+        <p>Preguntas, niveles y ranking</p>
+        <a href="trivia.html">
+            <button>Jugar</button>
+        </a>
+    </div>
+
 </div>
 
 <footer>
-    <p>&copy; 2026 Maldotown </p>
-
+    <p>&copy; 2026 Maldotown</p>
     <a href="https://www.instagram.com/east.groove/" target="_blank">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png"
-             alt="Instagram"
-             width="30">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" width="28">
     </a>
 </footer>
 
 <script src="//code.tidio.co/gyxhemy10se4osdwwvflnlls3ir0ozra.js" async></script>
-
-
 
 </body>
 </html>
