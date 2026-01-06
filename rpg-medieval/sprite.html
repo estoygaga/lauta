@@ -13,10 +13,12 @@ body {
     align-items: center;
     height: 100vh;
 }
+
 canvas {
     background: linear-gradient(#6ec6ff, #b3e5fc);
     image-rendering: pixelated;
 }
+
 #gameOver {
     position: absolute;
     display: none;
@@ -25,10 +27,12 @@ canvas {
     color: white;
     font-family: Arial;
 }
+
 #gameOver button {
     padding: 10px 20px;
     font-size: 18px;
     cursor: pointer;
+    margin-top: 10px;
 }
 </style>
 </head>
@@ -47,17 +51,20 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 const gravity = 0.6;
-const groundY = 400;
-const FRAME = 128;
+const FLOOR = canvas.height - 50;
 
+// =======================
+// SPRITES
+// =======================
 const sprites = {
-    idle:   { img: "Sprites/Knight/Idle.png", frames: 6, loop: true },
-    run:    { img: "Sprites/Knight/Run.png", frames: 8, loop: true },
-    jump:   { img: "Sprites/Knight/Jump.png", frames: 10, loop: false },
-    attack: { img: "Sprites/Knight/Attack_1.png", frames: 4, loop: false },
-    kick:   { img: "Sprites/Knight/Attack_3.png", frames: 4, loop: false },
-    shield: { img: "Sprites/Knight/Shield.png", frames: 2, loop: true },
-    dead:   { img: "Sprites/Knight/Dead.png", frames: 3, loop: false }
+    idle:    { img: "Sprites/Knight/Idle.png", frames: 6 },
+    run:     { img: "Sprites/Knight/Run.png", frames: 8 },
+    jump:    { img: "Sprites/Knight/Jump.png", frames: 10 },
+    attack1: { img: "Sprites/Knight/Attack_1.png", frames: 4 },
+    attack2: { img: "Sprites/Knight/Attack_2.png", frames: 3 },
+    kick:    { img: "Sprites/Knight/Attack_3.png", frames: 4 },
+    shield:  { img: "Sprites/Knight/Shield.png", frames: 2 },
+    dead:    { img: "Sprites/Knight/Dead.png", frames: 3 }
 };
 
 for (let s in sprites) {
@@ -65,86 +72,100 @@ for (let s in sprites) {
     sprites[s].image.src = sprites[s].img;
 }
 
+// =======================
+// PLAYER
+// =======================
 const player = {
-    x: 200,
-    y: groundY - 128,
-    w: 128,
-    h: 128,
+    x: 150,
+    y: 0,
+    w: 96,
+    h: 96,
     vx: 0,
     vy: 0,
     speed: 4,
-    jump: -13,
-    grounded: true,
+    jumpPower: -12,
+    grounded: false,
     state: "idle",
     frame: 0,
     frameTime: 0,
-    locked: false,
-    alive: true,
-    direction: 1 // 👉 1 derecha, -1 izquierda
+    dir: 1,
+    alive: true
 };
 
+let nextAttack = 1;
+
+// =======================
+// INPUT
+// =======================
 const keys = {};
-const pressed = {};
-
-addEventListener("keydown", e => {
-    if (!keys[e.key]) pressed[e.key] = true;
-    keys[e.key] = true;
-});
-
-addEventListener("keyup", e => {
-    keys[e.key] = false;
-    pressed[e.key] = false;
-});
-
-function setState(state) {
-    if (player.state !== state) {
-        player.state = state;
-        player.frame = 0;
-        player.frameTime = 0;
+window.addEventListener("keydown", e => {
+    keys[e.key.toLowerCase()] = true;
+    if (["w","a","s","d","j","k","x"].includes(e.key.toLowerCase())) {
+        e.preventDefault();
     }
-}
+});
+window.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
 
-function lockState(state) {
-    player.locked = true;
-    setState(state);
-}
-
+// =======================
+// UPDATE
+// =======================
 function update() {
     if (!player.alive) return;
 
     player.vx = 0;
 
-    if (!player.locked) {
-        if (pressed["j"]) lockState("attack");
-        else if (pressed["k"]) lockState("kick");
-        else if (keys["s"]) setState("shield");
-        else if (keys["a"]) {
+    const locked =
+        player.state.startsWith("attack") ||
+        player.state === "kick" ||
+        player.state === "shield" ||
+        player.state === "dead";
+
+    if (!locked) {
+        if (keys["a"]) {
             player.vx = -player.speed;
-            player.direction = -1;
-            setState("run");
+            player.dir = -1;
+            player.state = "run";
         }
         else if (keys["d"]) {
             player.vx = player.speed;
-            player.direction = 1;
-            setState("run");
+            player.dir = 1;
+            player.state = "run";
         }
-        else setState("idle");
+        else {
+            player.state = "idle";
+        }
+
+        if (keys["w"] && player.grounded) {
+            player.vy = player.jumpPower;
+            player.grounded = false;
+            player.state = "jump";
+        }
     }
 
-    if (pressed["w"] && player.grounded && !player.locked) {
-        player.vy = player.jump;
-        player.grounded = false;
-        setState("jump");
+    if (keys["j"] && !locked) {
+        player.state = nextAttack === 1 ? "attack1" : "attack2";
+        nextAttack = nextAttack === 1 ? 2 : 1;
+        player.frame = 0;
     }
 
-    if (pressed["x"]) die();
+    if (keys["k"] && !locked) {
+        player.state = "kick";
+        player.frame = 0;
+    }
+
+    if (keys["s"] && !locked) {
+        player.state = "shield";
+        player.frame = 0;
+    }
+
+    if (keys["x"]) die();
 
     player.vy += gravity;
     player.x += player.vx;
     player.y += player.vy;
 
-    if (player.y >= groundY - player.h) {
-        player.y = groundY - player.h;
+    if (player.y + player.h >= FLOOR) {
+        player.y = FLOOR - player.h;
         player.vy = 0;
         player.grounded = true;
     }
@@ -152,71 +173,77 @@ function update() {
     animate();
 }
 
+// =======================
+// ANIMATION
+// =======================
 function animate() {
     player.frameTime++;
     if (player.frameTime > 6) {
         player.frame++;
+        player.frameTime = 0;
+
         const max = sprites[player.state].frames;
 
         if (player.frame >= max) {
-            if (sprites[player.state].loop) {
-                player.frame = 0;
-            } else {
-                player.frame = max - 1;
-                player.locked = false;
-                if (player.state !== "dead") setState("idle");
+            if (
+                player.state.startsWith("attack") ||
+                player.state === "kick" ||
+                player.state === "shield"
+            ) {
+                player.state = "idle";
             }
+            player.frame = 0;
         }
-        player.frameTime = 0;
     }
 }
 
+// =======================
+// DRAW
+// =======================
 function draw() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    ctx.fillStyle = "#3c8f3c";
-    ctx.fillRect(0, groundY, canvas.width, 100);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const sprite = sprites[player.state];
+    const frameSize = 128;
 
     ctx.save();
     ctx.translate(
-        player.direction === 1 ? player.x : player.x + player.w,
+        player.x + player.w / 2,
         player.y
     );
-    ctx.scale(player.direction, 1);
+    ctx.scale(player.dir, 1);
 
     ctx.drawImage(
         sprite.image,
-        player.frame * FRAME, 0,
-        FRAME, FRAME,
-        0, 0,
+        player.frame * frameSize, 0,
+        frameSize, frameSize,
+        -player.w / 2, 0,
         player.w, player.h
     );
 
     ctx.restore();
 }
 
+// =======================
+// DEATH & RESPAWN
+// =======================
 function die() {
     player.alive = false;
-    player.locked = true;
-    setState("dead");
-    setTimeout(() => {
-        document.getElementById("gameOver").style.display = "flex";
-    }, 800);
+    player.state = "dead";
+    document.getElementById("gameOver").style.display = "flex";
 }
 
 function respawn() {
-    player.x = 200;
-    player.y = groundY - player.h;
+    player.x = 150;
+    player.y = 0;
     player.vx = 0;
     player.vy = 0;
     player.alive = true;
-    player.locked = false;
-    setState("idle");
+    player.state = "idle";
     document.getElementById("gameOver").style.display = "none";
 }
 
+// =======================
 function loop() {
     update();
     draw();
@@ -224,6 +251,7 @@ function loop() {
 }
 loop();
 </script>
+
 </body>
 </html>
 
