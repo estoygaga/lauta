@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foro - El Sapo Pepe</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #141e30, #243b55);
+            color: #fff;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 34px;
+        }
+
+        header p {
+            opacity: 0.85;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 20px;
+            background: #ffffff;
+            color: #333;
+            border-radius: 16px;
+            box-shadow: 0 15px 40px rgba(0,0,0,.3);
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            text-decoration: none;
+            background: #ff9800;
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .back-btn:hover {
+            opacity: 0.9;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>💬 Foro de la Comunidad</h1>
+    <p>Opiná, debatí y compartí con otros jugadores</p>
+</header>
+
+<div class="container">
+
+    <a href="index.html" class="back-btn">⬅ Volver al inicio</a>
+
+    <!-- DISQUS -->
+    <div id="disqus_thread"></div>
+
+</div>
+
+<footer>
+    &copy; 2026 El Sapo Pepe
+</footer>
+
+<!-- DISQUS SCRIPT -->
+<script>
+var disqus_config = function () {
+    this.page.url = window.location.href;
+    this.page.identifier = window.location.pathname;
+};
+
+(function() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://estoygaga.disqus.com/embed.js'; 
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+})();
+</script>
+
+</body>
+</html>
