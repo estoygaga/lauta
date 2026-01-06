@@ -1,167 +1,46 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El Sapo Pepe</title>
-
+<title>Test Sprite</title>
 <style>
 body {
     margin: 0;
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: linear-gradient(135deg, #141e30, #243b55);
-    color: #fff;
+    background: black;
 }
-
-/* HEADER */
-header {
-    text-align: center;
-    padding: 50px 20px 30px;
-}
-
-header h1 {
-    margin: 0;
-    font-size: 38px;
-}
-
-/* NAV */
-nav {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-nav a {
-    color: #fff;
-    margin: 0 12px;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-nav a:hover {
-    text-decoration: underline;
-}
-
-/* MAIN */
-.main {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 25px;
-    padding: 20px;
-}
-
-/* CARD */
-.card {
-    background: #ffffff;
-    color: #333;
-    width: 260px;
-    padding: 22px;
-    border-radius: 16px;
-    text-align: center;
-    box-shadow: 0 15px 40px rgba(0,0,0,.3);
-    transition: transform 0.2s;
-}
-
-.card:hover {
-    transform: translateY(-6px);
-}
-
-.card h3 {
-    margin-top: 0;
-}
-
-.card p {
-    font-size: 14px;
-    opacity: 0.8;
-}
-
-.card button {
-    margin-top: 15px;
-    padding: 12px;
-    width: 100%;
-    font-size: 16px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-}
-
-/* FOOTER */
-footer {
-    text-align: center;
-    padding: 20px;
-    opacity: 0.8;
+canvas {
+    image-rendering: pixelated;
+    background: #87ceeb;
 }
 </style>
 </head>
-
 <body>
 
-<header>
-    <h1>🐸 El Sapo Pepe</h1>
-    <p>Mini juegos y diversión</p>
-</header>
+<canvas id="game" width="800" height="400"></canvas>
 
-<nav>
-    <a href="#">Inicio</a>
-    <a href="#">Sobre mí</a>
-    <a href="#">Contacto</a>
-</nav>
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
-<div class="main">
+const img = new Image();
+img.src = "Sprites/Knight/Idle.png";
 
-    <div class="card">
-        <h3>🎮 Click Challenge</h3>
-        <p>Probá qué tan rápido sos haciendo clics</p>
-        <a href="juego.html">
-            <button>Jugar</button>
-        </a>
-    </div>
+img.onload = () => {
+    // dibuja el primer frame
+    ctx.drawImage(
+        img,
+        0, 0,      // origen en la imagen
+        128, 128,  // tamaño del frame (lo ajustamos luego)
+        200, 200,  // posición en pantalla
+        128, 128
+    );
+};
 
-    <div class="card">
-        <h3>🧠 Trivia Game</h3>
-        <p>Preguntas, niveles y ranking</p>
-        <a href="trivia.html">
-            <button>Jugar</button>
-        </a>
-    </div>
-
-    <div class="card">
-        <h3>💬 Que dice mijito</h3>
-        <p>Hablemos pavaditas</p>
-        <a href="foro.html">
-            <button>Entrar</button>
-        </a>
-    </div>
-    
-    <div class="card">
-        <h3>🏰Dungeon🏰</h3>
-        <p>Cagate a tiros un ratito</p>
-        <a href="rpg.html">
-            <button>Jugar</button>
-
-        </a>
-    </div>
-
-    <div class="card">
-        <h3>Zelda</h3>
-        <p>PRUEBA</p>
-        <a href="sprite.html">
-            <button>Jugar</button>
-        </a>
-    </div>
-</div>
-
-<footer>
-    <p>&copy; 2026 Maldotown</p>
-    <a href="https://www.instagram.com/east.groove/" target="_blank">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" width="28">
-    </a>
-</footer>
-
-<script src="//code.tidio.co/gyxhemy10se4osdwwvflnlls3ir0ozra.js" async></script>
+img.onerror = () => {
+    alert("NO SE CARGÓ Idle.png");
+};
+</script>
 
 </body>
 </html>
+
