@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -51,13 +50,8 @@ body {
     border-radius: 6px;
 }
 
-.player {
-    background: #4caf50;
-}
-
-.enemy {
-    background: #f44336;
-}
+.player { background: #4caf50; }
+.enemy { background: #f44336; }
 
 .controls {
     margin-top: 15px;
@@ -81,7 +75,7 @@ button {
 <div class="game">
     <div class="stats">
         <div>❤️ Vida: <span id="hp">100</span></div>
-        <div>⚔️ Ataque: 10</div>
+        <div>⬆ Nivel: <span id="level">1</span></div>
     </div>
 
     <div class="map" id="map"></div>
@@ -98,109 +92,24 @@ button {
         <div></div>
         <button onclick="move(0,1)">⬇️</button>
         <div></div>
-        <button onclick="attack()" style="margin-top:10px;width:100%;">
-⚔️ Atacar
-</button>
-
     </div>
+
+    <button onclick="attack()" style="margin-top:10px;width:100%;">⚔️ Atacar</button>
 </div>
 
 <script>
 const mapSize = 5;
 let level = 1;
 
-let player = {
-    x: 2,
-    y: 2,
-    hp: 100,
-    attack: 10
-};
-
+let player = { x: 2, y: 2, hp: 100, attack: 10 };
 let enemies = [];
-
 
 const mapEl = document.getElementById("map");
 const hpEl = document.getElementById("hp");
+const levelEl = document.getElementById("level");
 
-function drawMap() {
-    mapEl.innerHTML = "";
-
-    for (let y = 0; y < mapSize; y++) {
-        for (let x = 0; x < mapSize; x++) {
-            const cell = document.createElement("div");
-            cell.classList.add("cell");
-
-            if (x === player.x && y === player.y) {
-                cell.classList.add("player");
-                cell.textContent = "🙂";
-            }
-
-            enemies.forEach(enemy => {
-                if (enemy.hp > 0 && x === enemy.x && y === enemy.y) {
-                    cell.classList.add("enemy");
-                    cell.textContent = "👾";
-                }
-            });
-
-            mapEl.appendChild(cell);
-        }
-    }
-}
-
-
-function move(dx, dy) {
-    const newX = player.x + dx;
-    const newY = player.y + dy;
-
-    if (newX < 0 || newX >= mapSize || newY < 0 || newY >= mapSize) return;
-
-    player.x = newX;
-    player.y = newY;
-
-    checkCombat();
-    drawMap();
-}
-
-function checkCombat() {
-    if (player.x === enemy.x && player.y === enemy.y && enemy.hp > 0) {
-        enemy.hp -= player.attack;
-        player.hp -= 5;
-
-        hpEl.textContent = player.hp;
-
-        if (enemy.hp <= 0) {
-            alert("🎉 ¡Derrotaste al enemigo!");
-        }
-
-        if (player.hp <= 0) {
-            alert("💀 Has sido derrotado");
-            location.reload();
-        }
-    }
-}
-function attack() {
-    const dx = Math.abs(player.x - enemy.x);
-    const dy = Math.abs(player.y - enemy.y);
-
-    // Solo si está al lado
-    if (dx + dy === 1 && enemy.hp > 0) {
-        enemy.hp -= player.attack;
-        player.hp -= 5;
-
-        hpEl.textContent = player.hp;
-
-        if (enemy.hp <= 0) {
-            alert("🎉 ¡Derrotaste al enemigo!");
-        }
-
-        if (player.hp <= 0) {
-            alert("💀 Has sido derrotado");
-            location.reload();
-        }
-        
 function generateEnemies() {
     enemies = [];
-
     for (let i = 0; i < level + 1; i++) {
         enemies.push({
             x: Math.floor(Math.random() * mapSize),
@@ -211,15 +120,78 @@ function generateEnemies() {
     }
 }
 
+function drawMap() {
+    mapEl.innerHTML = "";
 
-        drawMap();
-    } else {
-        alert("❌ No hay enemigo cerca");
+    for (let y = 0; y < mapSize; y++) {
+        for (let x = 0; x < mapSize; x++) {
+            const cell = document.createElement("div");
+            cell.className = "cell";
+
+            if (x === player.x && y === player.y) {
+                cell.classList.add("player");
+                cell.textContent = "🙂";
+            }
+
+            enemies.forEach(e => {
+                if (e.hp > 0 && x === e.x && y === e.y) {
+                    cell.classList.add("enemy");
+                    cell.textContent = "👾";
+                }
+            });
+
+            mapEl.appendChild(cell);
+        }
     }
 }
+
+function move(dx, dy) {
+    const nx = player.x + dx;
+    const ny = player.y + dy;
+
+    if (nx < 0 || ny < 0 || nx >= mapSize || ny >= mapSize) return;
+
+    player.x = nx;
+    player.y = ny;
+    drawMap();
+}
+
+function attack() {
+    let hit = false;
+
+    enemies.forEach(e => {
+        const dist = Math.abs(player.x - e.x) + Math.abs(player.y - e.y);
+        if (dist === 1 && e.hp > 0) {
+            e.hp -= player.attack;
+            player.hp -= e.damage;
+            hit = true;
+        }
+    });
+
+    enemies = enemies.filter(e => e.hp > 0);
+    hpEl.textContent = player.hp;
+
+    if (!hit) alert("❌ No hay enemigo cerca");
+
+    if (player.hp <= 0) {
+        alert("💀 Has muerto");
+        location.reload();
+    }
+
+    if (enemies.length === 0) {
+        level++;
+        levelEl.textContent = level;
+        player.x = 2;
+        player.y = 2;
+        generateEnemies();
+        alert("⬆ Subiste a nivel " + level);
+    }
+
+    drawMap();
+}
+
 generateEnemies();
 drawMap();
-
 </script>
 
 </body>
