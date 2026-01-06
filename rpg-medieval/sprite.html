@@ -91,7 +91,11 @@ const player = {
     dir: 1,
     alive: true,
     attacking: false,
-    nextPunch: 1
+    nextPunch: 1,
+
+    // ❤️ VIDA
+    maxLife: 100,
+    life: 100
 };
 
 // =======================
@@ -153,8 +157,10 @@ function update() {
         player.state = "shield";
     }
 
-    if (keys["x"]) {
-        die();
+    // 💥 RECIBIR DAÑO (PRUEBA)
+    if (keys["h"]) {
+        takeDamage(10);
+        keys["h"] = false;
     }
 
     player.vy += GRAVITY;
@@ -168,6 +174,19 @@ function update() {
     }
 
     animate();
+}
+
+// =======================
+// DAMAGE
+// =======================
+function takeDamage(amount) {
+    if (!player.alive) return;
+
+    player.life -= amount;
+    if (player.life <= 0) {
+        player.life = 0;
+        die();
+    }
 }
 
 // =======================
@@ -200,6 +219,9 @@ function draw() {
     ctx.fillStyle = "#4CAF50";
     ctx.fillRect(0, FLOOR, canvas.width, canvas.height - FLOOR);
 
+    // ❤️ BARRA DE VIDA
+    drawLifeBar();
+
     const sprite = sprites[player.state];
     if (!sprite.img.complete) return;
 
@@ -222,6 +244,27 @@ function draw() {
 }
 
 // =======================
+// LIFE BAR
+// =======================
+function drawLifeBar() {
+    const x = 20;
+    const y = 20;
+    const width = 200;
+    const height = 20;
+
+    ctx.fillStyle = "#000";
+    ctx.fillRect(x - 2, y - 2, width + 4, height + 4);
+
+    const lifeWidth = (player.life / player.maxLife) * width;
+
+    ctx.fillStyle = "#e53935";
+    ctx.fillRect(x, y, lifeWidth, height);
+
+    ctx.strokeStyle = "#fff";
+    ctx.strokeRect(x, y, width, height);
+}
+
+// =======================
 // DEATH & RESPAWN
 // =======================
 function die() {
@@ -236,6 +279,7 @@ function respawn() {
     player.y = FLOOR - player.h;
     player.vx = 0;
     player.vy = 0;
+    player.life = player.maxLife;
     player.alive = true;
     player.state = "idle";
     player.attacking = false;
@@ -255,5 +299,4 @@ loop();
 </script>
 </body>
 </html>
-
 
