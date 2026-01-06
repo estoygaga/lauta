@@ -2,24 +2,21 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>RPG 2D Lateral</title>
+<title>RPG Medieval 2D</title>
 <style>
-    body {
-        margin: 0;
-        background: #222;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        overflow: hidden;
-        font-family: Arial, sans-serif;
-    }
-
-    canvas {
-        background: linear-gradient(#5cc0ff, #b3e5fc);
-        border: 3px solid #000;
-        image-rendering: pixelated;
-    }
+body {
+    margin: 0;
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+canvas {
+    border: 3px solid black;
+    image-rendering: pixelated;
+    background: #87ceeb;
+}
 </style>
 </head>
 <body>
@@ -27,139 +24,169 @@
 <canvas id="game" width="800" height="400"></canvas>
 
 <script>
-/* ========================
-   CONFIGURACIÓN GENERAL
-======================== */
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
+const TILE = 32;
 const gravity = 0.6;
-const groundY = 330;
 
-/* ========================
-   CONTROLES
-======================== */
-const keys = {
-    left: false,
-    right: false,
-    jump: false
-};
+/* ======================
+   MAPA MEDIEVAL
+====================== */
+const map = [
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
+    [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3]
+];
 
-document.addEventListener("keydown", e => {
-    if (e.code === "ArrowLeft") keys.left = true;
-    if (e.code === "ArrowRight") keys.right = true;
-    if (e.code === "Space") keys.jump = true;
-});
-
-document.addEventListener("keyup", e => {
-    if (e.code === "ArrowLeft") keys.left = false;
-    if (e.code === "ArrowRight") keys.right = false;
-    if (e.code === "Space") keys.jump = false;
-});
-
-/* ========================
-   JUGADOR
-======================== */
+/* ======================
+   JUGADOR (CABALLERO)
+====================== */
 const player = {
-    x: 100,
-    y: groundY,
-    width: 32,
-    height: 48,
+    x: 200,
+    y: 0,
+    w: 28,
+    h: 40,
     vx: 0,
     vy: 0,
     speed: 3,
     jumping: false,
-    direction: 1,
-    frame: 0,
-    frameTimer: 0
+    dir: 1
 };
 
-/* ========================
-   ACTUALIZAR JUGADOR
-======================== */
-function updatePlayer() {
+/* ======================
+   CONTROLES
+====================== */
+const keys = {};
+document.addEventListener("keydown", e => keys[e.code] = true);
+document.addEventListener("keyup", e => keys[e.code] = false);
+
+/* ======================
+   COLISIONES
+====================== */
+function collide(rect) {
+    for (let y = 0; y < map.length; y++) {
+        for (let x = 0; x < map[y].length; x++) {
+            if (map[y][x] !== 0) {
+                const tile = {
+                    x: x * TILE,
+                    y: y * TILE,
+                    w: TILE,
+                    h: TILE
+                };
+                if (
+                    rect.x < tile.x + tile.w &&
+                    rect.x + rect.w > tile.x &&
+                    rect.y < tile.y + tile.h &&
+                    rect.y + rect.h > tile.y
+                ) {
+                    return tile;
+                }
+            }
+        }
+    }
+    return null;
+}
+
+/* ======================
+   UPDATE
+====================== */
+function update() {
     player.vx = 0;
 
-    if (keys.left) {
+    if (keys["ArrowLeft"]) {
         player.vx = -player.speed;
-        player.direction = -1;
+        player.dir = -1;
     }
-    if (keys.right) {
+    if (keys["ArrowRight"]) {
         player.vx = player.speed;
-        player.direction = 1;
+        player.dir = 1;
     }
-
-    if (keys.jump && !player.jumping) {
+    if (keys["Space"] && !player.jumping) {
         player.vy = -12;
         player.jumping = true;
     }
 
     player.vy += gravity;
 
+    // Movimiento X
     player.x += player.vx;
+    let hitX = collide(player);
+    if (hitX) player.x -= player.vx;
+
+    // Movimiento Y
     player.y += player.vy;
-
-    if (player.y >= groundY) {
-        player.y = groundY;
-        player.vy = 0;
-        player.jumping = false;
-    }
-
-    // Animación
-    if (player.vx !== 0) {
-        player.frameTimer++;
-        if (player.frameTimer > 10) {
-            player.frame = (player.frame + 1) % 4;
-            player.frameTimer = 0;
+    let hitY = collide(player);
+    if (hitY) {
+        if (player.vy > 0) {
+            player.y = hitY.y - player.h;
+            player.jumping = false;
         }
-    } else {
-        player.frame = 0;
+        player.vy = 0;
     }
 }
 
-/* ========================
-   DIBUJAR JUGADOR (SPRITE)
-======================== */
-function drawPlayer() {
+/* ======================
+   CÁMARA
+====================== */
+function camera() {
+    return {
+        x: player.x - canvas.width / 2,
+        y: player.y - canvas.height / 2
+    };
+}
+
+/* ======================
+   DIBUJO
+====================== */
+function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const cam = camera();
+
+    // Mapa
+    for (let y = 0; y < map.length; y++) {
+        for (let x = 0; x < map[y].length; x++) {
+            if (map[y][x] !== 0) {
+                ctx.fillStyle =
+                    map[y][x] === 1 ? "#4caf50" :
+                    map[y][x] === 2 ? "#8d6e63" :
+                    "#9e9e9e";
+                ctx.fillRect(
+                    x * TILE - cam.x,
+                    y * TILE - cam.y,
+                    TILE,
+                    TILE
+                );
+            }
+        }
+    }
+
+    // Caballero (placeholder)
     ctx.save();
-    ctx.translate(player.x + player.width / 2, player.y);
-
-    ctx.scale(player.direction, 1);
-
-    ctx.fillStyle = "#000";
-    ctx.fillRect(-player.width / 2, -player.height, player.width, player.height);
-
-    // Ojos (detalle)
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(4, -36, 6, 6);
-
+    ctx.translate(player.x - cam.x + player.w/2, player.y - cam.y);
+    ctx.scale(player.dir,1);
+    ctx.fillStyle = "#2c2c2c";
+    ctx.fillRect(-player.w/2, -player.h, player.w, player.h);
+    ctx.fillStyle = "#ccc";
+    ctx.fillRect(-10, -30, 20, 10); // casco
     ctx.restore();
 }
 
-/* ========================
-   DIBUJAR SUELO
-======================== */
-function drawGround() {
-    ctx.fillStyle = "#3e7c17";
-    ctx.fillRect(0, groundY + 20, canvas.width, canvas.height);
+/* ======================
+   LOOP
+====================== */
+function loop() {
+    update();
+    draw();
+    requestAnimationFrame(loop);
 }
-
-/* ========================
-   LOOP DEL JUEGO
-======================== */
-function gameLoop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    drawGround();
-    updatePlayer();
-    drawPlayer();
-
-    requestAnimationFrame(gameLoop);
-}
-
-gameLoop();
+loop();
 </script>
 
 </body>
 </html>
-
