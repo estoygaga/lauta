@@ -30,6 +30,14 @@ canvas {
 ====================== */
 const knightIdle = new Image();
 knightIdle.src = "Sprites/Knight/Idle.png";
+
+knightIdle.onload = () => {
+    console.log("IMAGEN IDLE CARGADA OK");
+};
+
+knightIdle.onerror = () => {
+    console.error("ERROR: NO SE PUDO CARGAR Sprites/Knight/Igle.png");
+};
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
