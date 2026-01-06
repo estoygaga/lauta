@@ -106,6 +106,7 @@ button {
 
 <script>
 const mapSize = 5;
+let level = 1;
 
 let player = {
     x: 2,
@@ -114,11 +115,8 @@ let player = {
     attack: 10
 };
 
-let enemy = {
-    x: 4,
-    y: 4,
-    hp: 30
-};
+let enemies = [];
+
 
 const mapEl = document.getElementById("map");
 const hpEl = document.getElementById("hp");
@@ -134,16 +132,20 @@ function drawMap() {
             if (x === player.x && y === player.y) {
                 cell.classList.add("player");
                 cell.textContent = "🙂";
-            } 
-            else if (x === enemy.x && y === enemy.y && enemy.hp > 0) {
-                cell.classList.add("enemy");
-                cell.textContent = "👾";
             }
+
+            enemies.forEach(enemy => {
+                if (enemy.hp > 0 && x === enemy.x && y === enemy.y) {
+                    cell.classList.add("enemy");
+                    cell.textContent = "👾";
+                }
+            });
 
             mapEl.appendChild(cell);
         }
     }
 }
+
 
 function move(dx, dy) {
     const newX = player.x + dx;
@@ -194,12 +196,29 @@ function attack() {
             alert("💀 Has sido derrotado");
             location.reload();
         }
+        
+function generateEnemies() {
+    enemies = [];
+
+    for (let i = 0; i < level + 1; i++) {
+        enemies.push({
+            x: Math.floor(Math.random() * mapSize),
+            y: Math.floor(Math.random() * mapSize),
+            hp: 20 + level * 10,
+            damage: 5 + level * 2
+        });
+    }
+}
+
 
         drawMap();
     } else {
         alert("❌ No hay enemigo cerca");
     }
 }
+generateEnemies();
+drawMap();
+
 </script>
 
 </body>
