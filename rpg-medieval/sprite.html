@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Test Sprite Knight</title>
+<style>
+body {
+    margin: 0;
+    background: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+canvas {
+    background: #87ceeb;
+    image-rendering: pixelated;
+}
+</style>
+</head>
+<body>
+
+<canvas id="game" width="800" height="400"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const knightIdle = new Image();
+
+// ⚠️ RUTA CORRECTA PARA TU CASO
+knightIdle.src = "./Sprites/Knight/Idle.png";
+
+knightIdle.onload = () => {
+    console.log("Imagen cargada OK");
+
+    ctx.drawImage(
+        knightIdle,
+        0, 0,       // origen sprite
+        128, 128,   // tamaño frame (ajustable)
+        300, 200,   // posición en canvas
+        128, 128
+    );
+};
+
+knightIdle.onerror = () => {
+    alert("ERROR: no se pudo cargar Idle.png");
+};
+</script>
+
+</body>
+</html>
+
