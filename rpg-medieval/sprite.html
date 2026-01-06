@@ -48,7 +48,7 @@ const ctx = canvas.getContext("2d");
 
 const gravity = 0.6;
 const groundY = 400;
-const FRAME_SIZE = 128;
+const FRAME = 128;
 
 const sprites = {
     idle:   { img: "Sprites/Knight/Idle.png", frames: 6, loop: true },
@@ -66,7 +66,7 @@ for (let s in sprites) {
 }
 
 const player = {
-    x: 150,
+    x: 200,
     y: groundY - 128,
     w: 128,
     h: 128,
@@ -79,20 +79,34 @@ const player = {
     frame: 0,
     frameTime: 0,
     locked: false,
-    alive: true
+    alive: true,
+    direction: 1 // 👉 1 derecha, -1 izquierda
 };
 
 const keys = {};
-addEventListener("keydown", e => keys[e.key] = true);
-addEventListener("keyup", e => keys[e.key] = false);
+const pressed = {};
 
-function setState(newState) {
-    if (player.locked) return;
-    if (player.state !== newState) {
-        player.state = newState;
+addEventListener("keydown", e => {
+    if (!keys[e.key]) pressed[e.key] = true;
+    keys[e.key] = true;
+});
+
+addEventListener("keyup", e => {
+    keys[e.key] = false;
+    pressed[e.key] = false;
+});
+
+function setState(state) {
+    if (player.state !== state) {
+        player.state = state;
         player.frame = 0;
         player.frameTime = 0;
     }
+}
+
+function lockState(state) {
+    player.locked = true;
+    setState(state);
 }
 
 function update() {
@@ -101,27 +115,29 @@ function update() {
     player.vx = 0;
 
     if (!player.locked) {
-        if (keys["j"]) lockState("attack");
-        else if (keys["k"]) lockState("kick");
+        if (pressed["j"]) lockState("attack");
+        else if (pressed["k"]) lockState("kick");
         else if (keys["s"]) setState("shield");
         else if (keys["a"]) {
             player.vx = -player.speed;
+            player.direction = -1;
             setState("run");
         }
         else if (keys["d"]) {
             player.vx = player.speed;
+            player.direction = 1;
             setState("run");
         }
         else setState("idle");
     }
 
-    if (keys["w"] && player.grounded && !player.locked) {
+    if (pressed["w"] && player.grounded && !player.locked) {
         player.vy = player.jump;
         player.grounded = false;
         setState("jump");
     }
 
-    if (keys["x"]) die();
+    if (pressed["x"]) die();
 
     player.vy += gravity;
     player.x += player.vx;
@@ -134,11 +150,6 @@ function update() {
     }
 
     animate();
-}
-
-function lockState(state) {
-    player.locked = true;
-    setState(state);
 }
 
 function animate() {
@@ -163,19 +174,27 @@ function animate() {
 function draw() {
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    // suelo
     ctx.fillStyle = "#3c8f3c";
     ctx.fillRect(0, groundY, canvas.width, 100);
 
     const sprite = sprites[player.state];
 
+    ctx.save();
+    ctx.translate(
+        player.direction === 1 ? player.x : player.x + player.w,
+        player.y
+    );
+    ctx.scale(player.direction, 1);
+
     ctx.drawImage(
         sprite.image,
-        player.frame * FRAME_SIZE, 0,
-        FRAME_SIZE, FRAME_SIZE,
-        player.x, player.y,
+        player.frame * FRAME, 0,
+        FRAME, FRAME,
+        0, 0,
         player.w, player.h
     );
+
+    ctx.restore();
 }
 
 function die() {
@@ -188,7 +207,7 @@ function die() {
 }
 
 function respawn() {
-    player.x = 150;
+    player.x = 200;
     player.y = groundY - player.h;
     player.vx = 0;
     player.vy = 0;
