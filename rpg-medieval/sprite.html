@@ -38,36 +38,53 @@ idleImage.src = "./Sprites/Knight/Idle.png";
 const runImage = new Image();
 runImage.src = "./Sprites/Knight/Run.png";
 
+const jumpImage = new Image();
+jumpImage.src = "./Sprites/Knight/Jump.png";
+
 /* =====================
    SPRITE DATA
 ===================== */
 const FRAME_WIDTH = 128;
 const FRAME_HEIGHT = 128;
+
 const IDLE_FRAMES = 6;
 const RUN_FRAMES = 8;
+const JUMP_FRAMES = 10;
 
 let currentFrame = 0;
 let frameTimer = 0;
-const FRAME_SPEED = 8;
+const FRAME_SPEED = 6;
+
+/* =====================
+   FÍSICA
+===================== */
+const gravity = 0.6;
+const groundY = 220;
 
 /* =====================
    PLAYER
 ===================== */
 const player = {
     x: 336,
-    y: 200,
+    y: groundY,
+    vy: 0,
     speed: 3,
+    jumping: false,
     moving: false,
-    direction: 1 // 1 = derecha, -1 = izquierda
+    direction: 1
 };
 
 /* =====================
    INPUT
 ===================== */
 const keys = {};
+window.addEventListener("keydown", e => {
+    keys[e.code] = true;
 
-window.addEventListener("keydown", e => keys[e.key] = true);
-window.addEventListener("keyup", e => keys[e.key] = false);
+    // Evita que Space mueva la página
+    if (e.code === "Space") e.preventDefault();
+});
+window.addEventListener("keyup", e => keys[e.code] = false);
 
 /* =====================
    LOOP
@@ -84,23 +101,48 @@ function loop() {
 function update() {
     player.moving = false;
 
+    // Movimiento horizontal
     if (keys["ArrowRight"]) {
         player.x += player.speed;
         player.direction = 1;
         player.moving = true;
     }
-
     if (keys["ArrowLeft"]) {
         player.x -= player.speed;
         player.direction = -1;
         player.moving = true;
     }
 
+    // Salto
+    if (keys["Space"] && !player.jumping) {
+        player.vy = -12;
+        player.jumping = true;
+        currentFrame = 0;
+    }
+
+    // Gravedad
+    if (player.jumping) {
+        player.vy += gravity;
+        player.y += player.vy;
+
+        if (player.y >= groundY) {
+            player.y = groundY;
+            player.vy = 0;
+            player.jumping = false;
+            currentFrame = 0;
+        }
+    }
+
+    // Animación
     frameTimer++;
     if (frameTimer >= FRAME_SPEED) {
         frameTimer = 0;
         currentFrame++;
-        const maxFrames = player.moving ? RUN_FRAMES : IDLE_FRAMES;
+
+        let maxFrames = IDLE_FRAMES;
+        if (player.jumping) maxFrames = JUMP_FRAMES;
+        else if (player.moving) maxFrames = RUN_FRAMES;
+
         if (currentFrame >= maxFrames) currentFrame = 0;
     }
 }
@@ -111,7 +153,9 @@ function update() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const sprite = player.moving ? runImage : idleImage;
+    let sprite = idleImage;
+    if (player.jumping) sprite = jumpImage;
+    else if (player.moving) sprite = runImage;
 
     ctx.save();
     ctx.scale(player.direction, 1);
@@ -131,9 +175,6 @@ function draw() {
     ctx.restore();
 }
 
-/* =====================
-   START
-===================== */
 loop();
 </script>
 
