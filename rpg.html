@@ -97,6 +97,10 @@ button {
         <div></div>
         <button onclick="move(0,1)">⬇️</button>
         <div></div>
+        <button onclick="attack()" style="margin-top:10px;width:100%;">
+⚔️ Atacar
+</button>
+
     </div>
 </div>
 
@@ -171,8 +175,31 @@ function checkCombat() {
         }
     }
 }
+function attack() {
+    const dx = Math.abs(player.x - enemy.x);
+    const dy = Math.abs(player.y - enemy.y);
 
-drawMap();
+    // Solo si está al lado
+    if (dx + dy === 1 && enemy.hp > 0) {
+        enemy.hp -= player.attack;
+        player.hp -= 5;
+
+        hpEl.textContent = player.hp;
+
+        if (enemy.hp <= 0) {
+            alert("🎉 ¡Derrotaste al enemigo!");
+        }
+
+        if (player.hp <= 0) {
+            alert("💀 Has sido derrotado");
+            location.reload();
+        }
+
+        drawMap();
+    } else {
+        alert("❌ No hay enemigo cerca");
+    }
+}
 </script>
 
 </body>
