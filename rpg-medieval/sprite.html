@@ -83,7 +83,8 @@ const enemy={
  state:"idle",frame:0,frameTime:0,
  facing:-1,
  maxHp:100,hp:100,
- alive:true
+ alive:true,
+ justHit:false   // ← NUEVO (control de daño)
 };
 
 // =======================
@@ -144,18 +145,16 @@ function updatePlayer(){
 }
 
 // =======================
-// HITBOX & DAÑO (NUEVO)
+// HITBOX & DAÑO
 // =======================
 function rectsCollide(a,b){
- return a.x<a.x+b.w&&a.x+a.w>b.x&&a.y<a.y+b.h&&a.y+a.h>b.y;
+ return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
 }
 
 function getAttackHitbox(){
  if(!player.attacking)return null;
-
  const size=40;
  const offset=player.facing===1?player.w-10:-size+10;
-
  return{
   x:player.x+offset,
   y:player.y+30,
@@ -166,14 +165,18 @@ function getAttackHitbox(){
 
 function applyDamage(){
  if(!enemy.alive)return;
+
  const hitbox=getAttackHitbox();
- if(!hitbox)return;
+ if(!hitbox||enemy.justHit)return;
 
  const enemyBox={x:enemy.x,y:enemy.y,w:enemy.w,h:enemy.h};
  if(rectsCollide(hitbox,enemyBox)){
-  enemy.hp-=10;
+  enemy.justHit=true;
+  enemy.hp-=15; // daño realista
+
   enemy.state="hurt";
   resetAnim(enemy);
+
   if(enemy.hp<=0){
    enemy.hp=0;
    enemy.alive=false;
@@ -187,6 +190,7 @@ function applyDamage(){
 // ANIMATION
 // =======================
 function resetAnim(e){e.frame=0;e.frameTime=0;}
+
 function animate(e,sprites){
  e.frameTime++;
  if(e.frameTime>=6){
@@ -194,9 +198,11 @@ function animate(e,sprites){
   e.frameTime=0;
   if(e.frame>=sprites[e.state].frames){
    e.frame=0;
+
    if(e===player&&e.attacking){
     e.attacking=false;
     e.state="idle";
+    enemy.justHit=false; // ← libera daño para próximo ataque
    }
   }
  }
@@ -234,7 +240,7 @@ function draw(){
  ctx.fillRect(0,GROUND_Y,canvas.width,60);
 
  drawEntity(player,playerSprites,player.facing===-1);
- if(enemy.alive)drawEntity(enemy,enemySprites,true);
+ drawEntity(enemy,enemySprites,true);
 
  drawHealthBar(player);
  drawHealthBar(enemy);
