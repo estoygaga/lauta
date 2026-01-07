@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>RPG Medieval 2D</title>
-
 <style>
 body {
     margin: 0;
@@ -29,211 +28,229 @@ const ctx = canvas.getContext("2d");
 
 const gravity = 0.6;
 const groundY = canvas.height - 60;
-const FRAME_SIZE = 128;
+const FRAME = 128;
 
-// =======================
-// SPRITES PLAYER
-// =======================
+// =====================
+// SPRITES
+// =====================
+function loadSprites(obj) {
+    for (let s in obj) {
+        obj[s].img = new Image();
+        obj[s].img.src = obj[s].src;
+    }
+}
+
 const playerSprites = {
-    idle:   { src: "Sprites/Knight/Idle.png", frames: 6 },
-    run:    { src: "Sprites/Knight/Run.png", frames: 8 },
-    jump:   { src: "Sprites/Knight/Jump.png", frames: 10 },
-    attack1:{ src: "Sprites/Knight/Attack_1.png", frames: 4 },
-    attack2:{ src: "Sprites/Knight/Attack_2.png", frames: 3 },
-    kick:   { src: "Sprites/Knight/Kick.png", frames: 4 },
-    shield: { src: "Sprites/Knight/Shield.png", frames: 2 },
-    dead:   { src: "Sprites/Knight/Dead.png", frames: 3 }
+    idle:{src:"Sprites/Knight/Idle.png",frames:6},
+    run:{src:"Sprites/Knight/Run.png",frames:8},
+    jump:{src:"Sprites/Knight/Jump.png",frames:10},
+    attack1:{src:"Sprites/Knight/Attack_1.png",frames:4, lock:true},
+    attack2:{src:"Sprites/Knight/Attack_2.png",frames:3, lock:true},
+    kick:{src:"Sprites/Knight/Kick.png",frames:4, lock:true},
+    shield:{src:"Sprites/Knight/Shield.png",frames:2, lock:true},
+    dead:{src:"Sprites/Knight/Dead.png",frames:3, lock:true}
 };
 
-for (let s in playerSprites) {
-    playerSprites[s].img = new Image();
-    playerSprites[s].img.src = playerSprites[s].src;
-}
-
-// =======================
-// SPRITES ENEMY
-// =======================
 const enemySprites = {
-    idle:   { src: "Sprites/Knight/Enemy/Idle.png", frames: 6 },
-    walk:   { src: "Sprites/Knight/Enemy/Walk.png", frames: 10 },
-    attack: { src: "Sprites/Knight/Enemy/Attack.png", frames: 5 },
-    hurt:   { src: "Sprites/Knight/Enemy/Hurt.png", frames: 4 },
-    dead:   { src: "Sprites/Knight/Enemy/Dead.png", frames: 5 }
+    idle:{src:"Sprites/Knight/Enemy/Idle.png",frames:6},
+    walk:{src:"Sprites/Knight/Enemy/Walk.png",frames:10},
+    hurt:{src:"Sprites/Knight/Enemy/Hurt.png",frames:4, lock:true},
+    dead:{src:"Sprites/Knight/Enemy/Dead.png",frames:5, lock:true}
 };
 
-for (let s in enemySprites) {
-    enemySprites[s].img = new Image();
-    enemySprites[s].img.src = enemySprites[s].src;
-}
+loadSprites(playerSprites);
+loadSprites(enemySprites);
 
-// =======================
+// =====================
 // PLAYER
-// =======================
+// =====================
 const player = {
-    x: 120,
-    y: groundY - 96,
-    w: 96,
-    h: 96,
-    vx: 0,
-    vy: 0,
-    speed: 4,
-    jump: -12,
-    grounded: true,
-    state: "idle",
-    frame: 0,
-    frameTime: 0,
-    facing: 1,
-    attacking: false,
-    attackToggle: false
+    x:120, y:groundY-96,
+    w:96, h:96,
+    vx:0, vy:0,
+    speed:4, jump:-12,
+    grounded:true,
+    state:"idle",
+    frame:0, time:0,
+    facing:1,
+    locked:false,
+    attackToggle:false
 };
 
-// =======================
+// =====================
 // ENEMY
-// =======================
+// =====================
 const enemy = {
-    x: 720,
-    y: groundY - 96,
-    w: 96,
-    h: 96,
-    vx: 0,
-    vy: 0,
-    grounded: true,
-    state: "idle",
-    frame: 0,
-    frameTime: 0,
-    facing: -1
+    x:720, y:groundY-96,
+    w:96, h:96,
+    vy:0,
+    state:"idle",
+    frame:0, time:0,
+    hp:100,
+    maxHp:100,
+    alive:true
 };
 
-// =======================
+// =====================
 // INPUT
-// =======================
+// =====================
 const keys = {};
-window.addEventListener("keydown", e => {
-    if (!keys[e.key]) {
-        if (e.key === "j" && !player.attacking) {
-            player.attacking = true;
-            player.attackToggle = !player.attackToggle;
-            player.state = player.attackToggle ? "attack1" : "attack2";
-            player.frame = 0;
+window.addEventListener("keydown", e=>{
+    if(keys[e.key]) return;
+
+    if(!player.locked){
+        if(e.key==="j"){
+            player.attackToggle=!player.attackToggle;
+            setState(player, player.attackToggle?"attack1":"attack2");
+            attack();
         }
-        if (e.key === "k" && !player.attacking) {
-            player.attacking = true;
-            player.state = "kick";
-            player.frame = 0;
+        if(e.key==="k"){
+            setState(player,"kick");
+            attack();
         }
-        if (e.key === "s" && !player.attacking) {
-            player.attacking = true;
-            player.state = "shield";
-            player.frame = 0;
+        if(e.key==="s"){
+            setState(player,"shield");
         }
     }
-    keys[e.key] = true;
+    keys[e.key]=true;
 });
-window.addEventListener("keyup", e => keys[e.key] = false);
+window.addEventListener("keyup",e=>keys[e.key]=false);
 
-// =======================
+// =====================
+// STATE
+// =====================
+function setState(entity,state){
+    entity.state=state;
+    entity.frame=0;
+    entity.time=0;
+    entity.locked=playerSprites[state]?.lock || false;
+}
+
+// =====================
+// HITBOX + DAMAGE
+// =====================
+function attack(){
+    if(!enemy.alive) return;
+
+    const hitbox = {
+        x: player.facing===1 ? player.x+player.w : player.x-40,
+        y: player.y+20,
+        w:40,
+        h:40
+    };
+
+    if(
+        hitbox.x < enemy.x+enemy.w &&
+        hitbox.x+hitbox.w > enemy.x &&
+        hitbox.y < enemy.y+enemy.h &&
+        hitbox.y+hitbox.h > enemy.y
+    ){
+        enemy.hp -= 20;
+        setEnemyState(enemy.hp<=0?"dead":"hurt");
+    }
+}
+
+function setEnemyState(state){
+    enemy.state=state;
+    enemy.frame=0;
+    enemy.time=0;
+    if(state==="dead") enemy.alive=false;
+}
+
+// =====================
 // UPDATE
-// =======================
-function updatePlayer() {
-    if (!player.attacking) {
-        player.vx = 0;
-        if (keys["a"]) {
-            player.vx = -player.speed;
-            player.facing = -1;
-            player.state = "run";
-        } else if (keys["d"]) {
-            player.vx = player.speed;
-            player.facing = 1;
-            player.state = "run";
-        } else {
-            player.state = "idle";
-        }
+// =====================
+function updatePlayer(){
+    if(!player.locked){
+        player.vx=0;
+        if(keys["a"]){player.vx=-player.speed;player.facing=-1;setState(player,"run")}
+        else if(keys["d"]){player.vx=player.speed;player.facing=1;setState(player,"run")}
+        else setState(player,"idle");
 
-        if (keys["w"] && player.grounded) {
-            player.vy = player.jump;
-            player.grounded = false;
-            player.state = "jump";
+        if(keys["w"] && player.grounded){
+            player.vy=player.jump;
+            player.grounded=false;
+            setState(player,"jump");
         }
     }
 
-    player.vy += gravity;
-    player.x += player.vx;
-    player.y += player.vy;
+    player.vy+=gravity;
+    player.x+=player.vx;
+    player.y+=player.vy;
 
-    if (player.y + player.h >= groundY) {
-        player.y = groundY - player.h;
-        player.vy = 0;
-        player.grounded = true;
+    if(player.y+player.h>=groundY){
+        player.y=groundY-player.h;
+        player.vy=0;
+        player.grounded=true;
     }
 }
 
-function updateEnemy() {
-    enemy.vy += gravity;
-    enemy.y += enemy.vy;
-
-    if (enemy.y + enemy.h >= groundY) {
-        enemy.y = groundY - enemy.h;
-        enemy.vy = 0;
-        enemy.grounded = true;
+function updateEnemy(){
+    enemy.vy+=gravity;
+    enemy.y+=enemy.vy;
+    if(enemy.y+enemy.h>=groundY){
+        enemy.y=groundY-enemy.h;
+        enemy.vy=0;
     }
 }
 
-// =======================
+// =====================
 // ANIMATION
-// =======================
-function animate(entity, sprites) {
-    entity.frameTime++;
-    if (entity.frameTime > 6) {
+// =====================
+function animate(entity,sprites){
+    entity.time++;
+    if(entity.time>6){
         entity.frame++;
-        if (entity.frame >= sprites[entity.state].frames) {
-            entity.frame = 0;
-            if (entity === player) entity.attacking = false;
+        if(entity.frame>=sprites[entity.state].frames){
+            entity.frame=0;
+            if(entity.locked) entity.locked=false;
+            if(entity===enemy && enemy.state==="hurt") enemy.state="idle";
         }
-        entity.frameTime = 0;
+        entity.time=0;
     }
 }
 
-// =======================
+// =====================
 // DRAW
-// =======================
-function drawEntity(entity, sprites, flip=false) {
-    const sprite = sprites[entity.state];
+// =====================
+function drawEntity(e,sprites,flip=false){
+    const s=sprites[e.state];
     ctx.save();
-    ctx.translate(
-        flip ? entity.x + entity.w : entity.x,
-        entity.y
-    );
-    ctx.scale(flip ? -1 : 1, 1);
-
+    ctx.translate(flip?e.x+e.w:e.x,e.y);
+    ctx.scale(flip?-1:1,1);
     ctx.drawImage(
-        sprite.img,
-        entity.frame * FRAME_SIZE, 0,
-        FRAME_SIZE, FRAME_SIZE,
-        0, 0,
-        entity.w, entity.h
+        s.img,
+        e.frame*FRAME,0,FRAME,FRAME,
+        0,0,e.w,e.h
     );
     ctx.restore();
 }
 
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // suelo
-    ctx.fillStyle = "#2e7d32";
-    ctx.fillRect(0, groundY, canvas.width, 60);
-
-    drawEntity(player, playerSprites, player.facing === -1);
-    drawEntity(enemy, enemySprites, true);
+function drawHealthBar(){
+    ctx.fillStyle="red";
+    ctx.fillRect(enemy.x,enemy.y-10,enemy.w,6);
+    ctx.fillStyle="lime";
+    ctx.fillRect(enemy.x,enemy.y-10,(enemy.hp/enemy.maxHp)*enemy.w,6);
 }
 
-// =======================
+function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle="#2e7d32";
+    ctx.fillRect(0,groundY,canvas.width,60);
+
+    drawEntity(player,playerSprites,player.facing===-1);
+    drawEntity(enemy,enemySprites,true);
+    drawHealthBar();
+}
+
+// =====================
 // LOOP
-// =======================
-function loop() {
+// =====================
+function loop(){
     updatePlayer();
     updateEnemy();
-    animate(player, playerSprites);
-    animate(enemy, enemySprites);
+    animate(player,playerSprites);
+    animate(enemy,enemySprites);
     draw();
     requestAnimationFrame(loop);
 }
