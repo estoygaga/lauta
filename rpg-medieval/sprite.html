@@ -68,6 +68,8 @@ const FRAME_SIZE = 128;
 const GAME_SCALE = 1.5;
 
 let gamePaused = false;
+let deathTimer = 0;
+
 
 // =======================
 // SPRITES PLAYER
@@ -272,14 +274,21 @@ function enemyAttack(){
     resetAnim(player);
   }
   if (player.hp === 0 && !gameOver) {
-    gameOver = true;
+    if (player.state !== "dead") {
+        player.state = "dead";
+        resetAnim(player);
+        deathTimer = 60;
+    }
 
-    player.state = "dead";
-    resetAnim(player);
+    deathTimer--;
 
-    gamePaused = true;
-    respawnBtn.style.display = "block";
-  }
+    if (deathTimer <= 0) {
+        gameOver = true;
+        gamePaused = true;
+        respawnBtn.style.display = "block";
+    }
+
+  };
  };
 };
 
