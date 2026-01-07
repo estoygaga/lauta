@@ -21,7 +21,6 @@ canvas {
 </head>
 
 <body>
-
 <canvas id="game" width="1000" height="500"></canvas>
 
 <script>
@@ -30,92 +29,114 @@ const ctx = canvas.getContext("2d");
 
 const gravity = 0.6;
 const groundY = canvas.height - 60;
+const FRAME_SIZE = 128;
 
-// ================= SPRITES =================
-function loadSprite(src, frames) {
-    const img = new Image();
-    img.src = src;
-    return { img, frames };
+// =======================
+// SPRITES PLAYER
+// =======================
+const playerSprites = {
+    idle:   { src: "Sprites/Knight/Idle.png", frames: 6 },
+    run:    { src: "Sprites/Knight/Run.png", frames: 8 },
+    jump:   { src: "Sprites/Knight/Jump.png", frames: 10 },
+    attack1:{ src: "Sprites/Knight/Attack_1.png", frames: 4 },
+    attack2:{ src: "Sprites/Knight/Attack_2.png", frames: 3 },
+    kick:   { src: "Sprites/Knight/Kick.png", frames: 4 },
+    shield: { src: "Sprites/Knight/Shield.png", frames: 2 },
+    dead:   { src: "Sprites/Knight/Dead.png", frames: 3 }
+};
+
+for (let s in playerSprites) {
+    playerSprites[s].img = new Image();
+    playerSprites[s].img.src = playerSprites[s].src;
 }
 
-const knightSprites = {
-    idle: loadSprite("Sprites/Knight/Idle.png", 6),
-    run: loadSprite("Sprites/Knight/Run.png", 8),
-    jump: loadSprite("Sprites/Knight/Jump.png", 10),
-    attack1: loadSprite("Sprites/Knight/Attack_1.png", 4),
-    attack2: loadSprite("Sprites/Knight/Attack_2.png", 3),
-    kick: loadSprite("Sprites/Knight/Attack_3.png", 4),
-    shield: loadSprite("Sprites/Knight/Shield.png", 2),
-    dead: loadSprite("Sprites/Knight/Dead.png", 3)
-};
-
+// =======================
+// SPRITES ENEMY
+// =======================
 const enemySprites = {
-    idle: loadSprite("Sprites/Knight/Enemy/Idle.png", 6),
-    walk: loadSprite("Sprites/Knight/Enemy/Walk.png", 10),
-    attack: loadSprite("Sprites/Knight/Enemy/Attack.png", 5),
-    hurt: loadSprite("Sprites/Knight/Enemy/Hurt.png", 4),
-    dead: loadSprite("Sprites/Knight/Enemy/Dead.png", 5)
+    idle:   { src: "Sprites/Knight/Enemy/Idle.png", frames: 6 },
+    walk:   { src: "Sprites/Knight/Enemy/Walk.png", frames: 10 },
+    attack: { src: "Sprites/Knight/Enemy/Attack.png", frames: 5 },
+    hurt:   { src: "Sprites/Knight/Enemy/Hurt.png", frames: 4 },
+    dead:   { src: "Sprites/Knight/Enemy/Dead.png", frames: 5 }
 };
 
-// ================= PLAYER =================
+for (let s in enemySprites) {
+    enemySprites[s].img = new Image();
+    enemySprites[s].img.src = enemySprites[s].src;
+}
+
+// =======================
+// PLAYER
+// =======================
 const player = {
-    x: 200,
-    y: 0,
+    x: 120,
+    y: groundY - 96,
     w: 96,
     h: 96,
     vx: 0,
     vy: 0,
     speed: 4,
     jump: -12,
-    grounded: false,
-    facing: 1,
+    grounded: true,
     state: "idle",
     frame: 0,
     frameTime: 0,
+    facing: 1,
     attacking: false,
-    attackToggle: false,
-    hp: 100,
-    alive: true
+    attackToggle: false
 };
 
-// ================= ENEMY =================
+// =======================
+// ENEMY
+// =======================
 const enemy = {
-    x: 650,
-    y: 0,
+    x: 720,
+    y: groundY - 96,
     w: 96,
     h: 96,
-    vx: -1.2,
+    vx: 0,
+    vy: 0,
+    grounded: true,
     state: "idle",
     frame: 0,
     frameTime: 0,
-    hp: 50,
-    alive: true,
-    facing: -1,
-    hurtTimer: 0
+    facing: -1
 };
 
-// ================= INPUT =================
+// =======================
+// INPUT
+// =======================
 const keys = {};
-window.addEventListener("keydown", e => keys[e.key] = true);
+window.addEventListener("keydown", e => {
+    if (!keys[e.key]) {
+        if (e.key === "j" && !player.attacking) {
+            player.attacking = true;
+            player.attackToggle = !player.attackToggle;
+            player.state = player.attackToggle ? "attack1" : "attack2";
+            player.frame = 0;
+        }
+        if (e.key === "k" && !player.attacking) {
+            player.attacking = true;
+            player.state = "kick";
+            player.frame = 0;
+        }
+        if (e.key === "s" && !player.attacking) {
+            player.attacking = true;
+            player.state = "shield";
+            player.frame = 0;
+        }
+    }
+    keys[e.key] = true;
+});
 window.addEventListener("keyup", e => keys[e.key] = false);
 
-// ================= COMBAT =================
-function rectHit(a, b) {
-    return (
-        a.x < b.x + b.w &&
-        a.x + a.w > b.x &&
-        a.y < b.y + b.h &&
-        a.y + a.h > b.y
-    );
-}
-
-// ================= UPDATE =================
+// =======================
+// UPDATE
+// =======================
 function updatePlayer() {
-    if (!player.alive) return;
-
-    player.vx = 0;
-
     if (!player.attacking) {
+        player.vx = 0;
         if (keys["a"]) {
             player.vx = -player.speed;
             player.facing = -1;
@@ -127,29 +148,12 @@ function updatePlayer() {
         } else {
             player.state = "idle";
         }
-    }
 
-    if (keys["w"] && player.grounded) {
-        player.vy = player.jump;
-        player.grounded = false;
-        player.state = "jump";
-    }
-
-    if (keys["j"] && !player.attacking) {
-        player.attacking = true;
-        player.attackToggle = !player.attackToggle;
-        player.state = player.attackToggle ? "attack1" : "attack2";
-        player.frame = 0;
-    }
-
-    if (keys["k"] && !player.attacking) {
-        player.attacking = true;
-        player.state = "kick";
-        player.frame = 0;
-    }
-
-    if (keys["s"]) {
-        player.state = "shield";
+        if (keys["w"] && player.grounded) {
+            player.vy = player.jump;
+            player.grounded = false;
+            player.state = "jump";
+        }
     }
 
     player.vy += gravity;
@@ -161,68 +165,52 @@ function updatePlayer() {
         player.vy = 0;
         player.grounded = true;
     }
-
-    animatePlayer();
 }
 
 function updateEnemy() {
-    if (!enemy.alive) return;
+    enemy.vy += gravity;
+    enemy.y += enemy.vy;
 
-    const distance = Math.abs(player.x - enemy.x);
-
-    if (enemy.hurtTimer > 0) {
-        enemy.hurtTimer--;
-        enemy.state = "hurt";
-    } else if (distance < 70) {
-        enemy.state = "attack";
-    } else if (distance < 300) {
-        enemy.state = "walk";
-        enemy.vx = player.x < enemy.x ? -1.2 : 1.2;
-    } else {
-        enemy.state = "idle";
-        enemy.vx = 0;
+    if (enemy.y + enemy.h >= groundY) {
+        enemy.y = groundY - enemy.h;
+        enemy.vy = 0;
+        enemy.grounded = true;
     }
-
-    enemy.x += enemy.vx;
-    animateEnemy();
 }
 
-// ================= ANIMATION =================
-function animatePlayer() {
-    player.frameTime++;
-    if (player.frameTime > 6) {
-        player.frame++;
-        const max = knightSprites[player.state].frames;
-        if (player.frame >= max) {
-            player.frame = 0;
-            if (player.attacking) player.attacking = false;
+// =======================
+// ANIMATION
+// =======================
+function animate(entity, sprites) {
+    entity.frameTime++;
+    if (entity.frameTime > 6) {
+        entity.frame++;
+        if (entity.frame >= sprites[entity.state].frames) {
+            entity.frame = 0;
+            if (entity === player) entity.attacking = false;
         }
-        player.frameTime = 0;
+        entity.frameTime = 0;
     }
 }
 
-function animateEnemy() {
-    enemy.frameTime++;
-    if (enemy.frameTime > 7) {
-        enemy.frame++;
-        const max = enemySprites[enemy.state].frames;
-        if (enemy.frame >= max) enemy.frame = 0;
-        enemy.frameTime = 0;
-    }
-}
-
-// ================= DRAW =================
-function drawSprite(sprite, x, y, w, h, frame, flip) {
-    const size = 128;
+// =======================
+// DRAW
+// =======================
+function drawEntity(entity, sprites, flip=false) {
+    const sprite = sprites[entity.state];
     ctx.save();
-    ctx.translate(x + w / 2, y);
-    ctx.scale(flip, 1);
+    ctx.translate(
+        flip ? entity.x + entity.w : entity.x,
+        entity.y
+    );
+    ctx.scale(flip ? -1 : 1, 1);
+
     ctx.drawImage(
         sprite.img,
-        frame * size, 0,
-        size, size,
-        -w / 2, 0,
-        w, h
+        entity.frame * FRAME_SIZE, 0,
+        FRAME_SIZE, FRAME_SIZE,
+        0, 0,
+        entity.w, entity.h
     );
     ctx.restore();
 }
@@ -234,36 +222,24 @@ function draw() {
     ctx.fillStyle = "#2e7d32";
     ctx.fillRect(0, groundY, canvas.width, 60);
 
-    drawSprite(
-        knightSprites[player.state],
-        player.x, player.y,
-        player.w, player.h,
-        player.frame,
-        player.facing
-    );
-
-    if (enemy.alive) {
-        drawSprite(
-            enemySprites[enemy.state],
-            enemy.x, enemy.y,
-            enemy.w, enemy.h,
-            enemy.frame,
-            enemy.facing
-        );
-    }
+    drawEntity(player, playerSprites, player.facing === -1);
+    drawEntity(enemy, enemySprites, true);
 }
 
-// ================= LOOP =================
+// =======================
+// LOOP
+// =======================
 function loop() {
     updatePlayer();
     updateEnemy();
+    animate(player, playerSprites);
+    animate(enemy, enemySprites);
     draw();
     requestAnimationFrame(loop);
 }
-
 loop();
 </script>
-
 </body>
 </html>
+
 
