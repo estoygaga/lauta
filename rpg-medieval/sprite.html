@@ -3,19 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <title>RPG Medieval 2D</title>
-
 <style>
-body {
-    margin: 0;
-    background: #111;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+body{
+    margin:0;
+    background:#111;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
 }
-canvas {
-    background: linear-gradient(#6ec6ff, #b3e5fc);
-    image-rendering: pixelated;
+canvas{
+    background:linear-gradient(#6ec6ff,#b3e5fc);
+    image-rendering:pixelated;
 }
 </style>
 </head>
@@ -27,240 +26,236 @@ canvas {
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-const gravity = 0.6;
-const groundY = canvas.height - 60;
-const FRAME = 128;
+const GRAVITY = 0.6;
+const GROUND_Y = canvas.height - 60;
+const FRAME_SIZE = 128;
 
 // =======================
 // SPRITES PLAYER
 // =======================
 const playerSprites = {
-    idle:   { src: "Sprites/Knight/Idle.png", frames: 6 },
-    run:    { src: "Sprites/Knight/Run.png", frames: 8 },
-    jump:   { src: "Sprites/Knight/Jump.png", frames: 10 },
-    attack1:{ src: "Sprites/Knight/Attack_1.png", frames: 4 },
-    attack2:{ src: "Sprites/Knight/Attack_2.png", frames: 3 },
-    kick:   { src: "Sprites/Knight/Attack_3.png", frames: 4 },
-    shield: { src: "Sprites/Knight/Shield.png", frames: 2 },
-    dead:   { src: "Sprites/Knight/Dead.png", frames: 3 }
+ idle:{src:"Sprites/Knight/Idle.png",frames:6},
+ run:{src:"Sprites/Knight/Run.png",frames:8},
+ jump:{src:"Sprites/Knight/Jump.png",frames:10},
+ attack1:{src:"Sprites/Knight/Attack_1.png",frames:4},
+ attack2:{src:"Sprites/Knight/Attack_2.png",frames:3},
+ attack3:{src:"Sprites/Knight/Attack_3.png",frames:4},
+ shield:{src:"Sprites/Knight/Shield.png",frames:2},
+ dead:{src:"Sprites/Knight/Dead.png",frames:3}
 };
-
-for (let s in playerSprites) {
-    playerSprites[s].img = new Image();
-    playerSprites[s].img.src = playerSprites[s].src;
+for(let s in playerSprites){
+ playerSprites[s].img=new Image();
+ playerSprites[s].img.src=playerSprites[s].src;
 }
 
 // =======================
 // SPRITES ENEMY
 // =======================
-const enemySprites = {
-    idle:   { src: "Sprites/Knight/Enemy/Idle.png", frames: 6 },
-    walk:   { src: "Sprites/Knight/Enemy/Walk.png", frames: 10 },
-    attack: { src: "Sprites/Knight/Enemy/Attack.png", frames: 5 },
-    hurt:   { src: "Sprites/Knight/Enemy/Hurt.png", frames: 4 },
-    dead:   { src: "Sprites/Knight/Enemy/Dead.png", frames: 5 }
+const enemySprites={
+ idle:{src:"Sprites/Knight/Enemy/Idle.png",frames:6},
+ walk:{src:"Sprites/Knight/Enemy/Walk.png",frames:10},
+ attack:{src:"Sprites/Knight/Enemy/Attack.png",frames:5},
+ hurt:{src:"Sprites/Knight/Enemy/Hurt.png",frames:4},
+ dead:{src:"Sprites/Knight/Enemy/Dead.png",frames:5}
 };
-
-for (let s in enemySprites) {
-    enemySprites[s].img = new Image();
-    enemySprites[s].img.src = enemySprites[s].src;
+for(let s in enemySprites){
+ enemySprites[s].img=new Image();
+ enemySprites[s].img.src=enemySprites[s].src;
 }
 
 // =======================
 // PLAYER
 // =======================
-const player = {
-    x: 120,
-    y: groundY - 96,
-    w: 96,
-    h: 96,
-    vx: 0,
-    vy: 0,
-    speed: 4,
-    jumpForce: -12,
-    grounded: true,
-    state: "idle",
-    frame: 0,
-    frameTime: 0,
-    facing: 1,
-    attacking: false,
-    attackToggle: false
+const player={
+ x:150,y:GROUND_Y-96,w:96,h:96,
+ vx:0,vy:0,speed:4,jumpForce:-12,
+ grounded:true,facing:1,
+ state:"idle",frame:0,frameTime:0,
+ attacking:false,shielding:false,attackToggle:false,
+ maxHp:100,hp:100
 };
 
 // =======================
 // ENEMY
 // =======================
-const enemy = {
-    x: 700,
-    y: groundY - 96,
-    w: 96,
-    h: 96,
-    state: "idle",
-    frame: 0,
-    frameTime: 0,
-    facing: -1,
-    life: 100,
-    alive: true,
-    dying: false
+const enemy={
+ x:700,y:GROUND_Y-96,w:96,h:96,
+ state:"idle",frame:0,frameTime:0,
+ facing:-1,
+ maxHp:100,hp:100,
+ alive:true,
+ justHit:false   // ← NUEVO (control de daño)
 };
 
 // =======================
 // INPUT
 // =======================
-const keys = {};
-window.addEventListener("keydown", e => {
-    if (!keys[e.key]) {
-        if (e.key === "j" && !player.attacking) {
-            player.attacking = true;
-            player.attackToggle = !player.attackToggle;
-            player.state = player.attackToggle ? "attack1" : "attack2";
-            player.frame = 0;
-        }
-        if (e.key === "k" && !player.attacking) {
-            player.attacking = true;
-            player.state = "kick";
-            player.frame = 0;
-        }
-        if (e.key === "s") {
-            player.state = "shield";
-        }
-    }
-    keys[e.key] = true;
+const keys={};
+window.addEventListener("keydown",e=>{
+ if(keys[e.key])return;
+ keys[e.key]=true;
+
+ if(e.key==="j"&&!player.attacking&&!player.shielding){
+  player.attacking=true;
+  player.attackToggle=!player.attackToggle;
+  player.state=player.attackToggle?"attack1":"attack2";
+  resetAnim(player);
+ }
+ if(e.key==="k"&&!player.attacking&&!player.shielding){
+  player.attacking=true;
+  player.state="attack3";
+  resetAnim(player);
+ }
+ if(e.key==="s"&&!player.attacking){
+  player.shielding=true;
+  player.state="shield";
+  resetAnim(player);
+ }
 });
-window.addEventListener("keyup", e => {
-    keys[e.key] = false;
-    if (e.key === "s" && !player.attacking) player.state = "idle";
+window.addEventListener("keyup",e=>{
+ keys[e.key]=false;
+ if(e.key==="s")player.shielding=false;
 });
-
-// =======================
-// HITBOX
-// =======================
-function attackHitbox() {
-    if (!player.attacking || !enemy.alive) return;
-
-    const range = 35;
-    const hitX = player.facing === 1
-        ? player.x + player.w
-        : player.x - range;
-
-    if (
-        hitX < enemy.x + enemy.w &&
-        hitX + range > enemy.x &&
-        player.y < enemy.y + enemy.h &&
-        player.y + player.h > enemy.y
-    ) {
-        enemy.life -= 10;
-        enemy.state = "hurt";
-        enemy.frame = 0;
-
-        if (enemy.life <= 0 && !enemy.dying) {
-            enemy.state = "dead";
-            enemy.frame = 0;
-            enemy.dying = true;
-        }
-    }
-}
 
 // =======================
 // UPDATE PLAYER
 // =======================
-function updatePlayer() {
-    if (!player.attacking && player.state !== "shield") {
-        player.vx = 0;
-        if (keys["a"]) {
-            player.vx = -player.speed;
-            player.facing = -1;
-            player.state = "run";
-        } else if (keys["d"]) {
-            player.vx = player.speed;
-            player.facing = 1;
-            player.state = "run";
-        } else {
-            player.state = "idle";
-        }
-    }
+function updatePlayer(){
+ if(!player.attacking&&!player.shielding){
+  player.vx=0;
+  if(keys["a"]){player.vx=-player.speed;player.facing=-1;player.state="run";}
+  else if(keys["d"]){player.vx=player.speed;player.facing=1;player.state="run";}
+  else if(player.grounded)player.state="idle";
 
-    if (keys["w"] && player.grounded) {
-        player.vy = player.jumpForce;
-        player.grounded = false;
-        player.state = "jump";
-    }
+  if(keys["w"]&&player.grounded){
+   player.vy=player.jumpForce;
+   player.grounded=false;
+   player.state="jump";
+   resetAnim(player);
+  }
+ }
+ player.vy+=GRAVITY;
+ player.x+=player.vx;
+ player.y+=player.vy;
+ if(player.y+player.h>=GROUND_Y){
+  player.y=GROUND_Y-player.h;
+  player.vy=0;
+  player.grounded=true;
+ }
+}
 
-    player.vy += gravity;
-    player.x += player.vx;
-    player.y += player.vy;
+// =======================
+// HITBOX & DAÑO
+// =======================
+function rectsCollide(a,b){
+ return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
+}
 
-    if (player.y + player.h >= groundY) {
-        player.y = groundY - player.h;
-        player.vy = 0;
-        player.grounded = true;
-    }
+function getAttackHitbox(){
+ if(!player.attacking)return null;
+ const size=40;
+ const offset=player.facing===1?player.w-10:-size+10;
+ return{
+  x:player.x+offset,
+  y:player.y+30,
+  w:size,
+  h:30
+ };
+}
+
+function applyDamage(){
+ if(!enemy.alive)return;
+
+ const hitbox=getAttackHitbox();
+ if(!hitbox||enemy.justHit)return;
+
+ const enemyBox={x:enemy.x,y:enemy.y,w:enemy.w,h:enemy.h};
+ if(rectsCollide(hitbox,enemyBox)){
+  enemy.justHit=true;
+  enemy.hp-=15; // daño realista
+
+  enemy.state="hurt";
+  resetAnim(enemy);
+
+  if(enemy.hp<=0){
+   enemy.hp=0;
+   enemy.alive=false;
+   enemy.state="dead";
+   resetAnim(enemy);
+  }
+ }
 }
 
 // =======================
 // ANIMATION
 // =======================
-function animate(entity, sprites) {
-    entity.frameTime++;
-    if (entity.frameTime > 6) {
-        entity.frame++;
-        if (entity.frame >= sprites[entity.state].frames) {
-            entity.frame = 0;
-            if (entity === player) player.attacking = false;
-            if (entity === enemy && enemy.dying) enemy.alive = false;
-        }
-        entity.frameTime = 0;
-    }
+function resetAnim(e){e.frame=0;e.frameTime=0;}
+
+function animate(e,sprites){
+ e.frameTime++;
+ if(e.frameTime>=6){
+  e.frame++;
+  e.frameTime=0;
+  if(e.frame>=sprites[e.state].frames){
+   e.frame=0;
+
+   if(e===player&&e.attacking){
+    e.attacking=false;
+    e.state="idle";
+    enemy.justHit=false; // ← libera daño para próximo ataque
+   }
+  }
+ }
 }
 
 // =======================
 // DRAW
 // =======================
-function drawEntity(entity, sprites, flip) {
-    const sprite = sprites[entity.state];
-    ctx.save();
-    ctx.translate(flip ? entity.x + entity.w : entity.x, entity.y);
-    ctx.scale(flip ? -1 : 1, 1);
-    ctx.drawImage(
-        sprite.img,
-        entity.frame * FRAME, 0,
-        FRAME, FRAME,
-        0, 0,
-        entity.w, entity.h
-    );
-    ctx.restore();
+function drawEntity(e,sprites,flip){
+ const s=sprites[e.state];
+ ctx.save();
+ ctx.translate(flip?e.x+e.w:e.x,e.y);
+ ctx.scale(flip?-1:1,1);
+ ctx.drawImage(
+  s.img,
+  e.frame*FRAME_SIZE,0,
+  FRAME_SIZE,FRAME_SIZE,
+  0,0,
+  e.w,e.h
+ );
+ ctx.restore();
 }
 
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+function drawHealthBar(e){
+ const r=e.hp/e.maxHp;
+ ctx.fillStyle="red";
+ ctx.fillRect(e.x,e.y-12,e.w,8);
+ ctx.fillStyle="lime";
+ ctx.fillRect(e.x,e.y-12,e.w*r,8);
+}
 
-    // suelo
-    ctx.fillStyle = "#2e7d32";
-    ctx.fillRect(0, groundY, canvas.width, 60);
+function draw(){
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+ ctx.fillStyle="#2e7d32";
+ ctx.fillRect(0,GROUND_Y,canvas.width,60);
 
-    drawEntity(player, playerSprites, player.facing === -1);
+ drawEntity(player,playerSprites,player.facing===-1);
+ drawEntity(enemy,enemySprites,true);
 
-    if (enemy.alive) {
-        drawEntity(enemy, enemySprites, true);
-
-        // barra de vida
-        ctx.fillStyle = "red";
-        ctx.fillRect(enemy.x, enemy.y - 10, enemy.w, 5);
-        ctx.fillStyle = "lime";
-        ctx.fillRect(enemy.x, enemy.y - 10, enemy.w * (enemy.life / 100), 5);
-    }
+ drawHealthBar(player);
+ drawHealthBar(enemy);
 }
 
 // =======================
 // LOOP
 // =======================
-function loop() {
-    updatePlayer();
-    attackHitbox();
-    animate(player, playerSprites);
-    if (enemy.alive) animate(enemy, enemySprites);
-    draw();
-    requestAnimationFrame(loop);
+function loop(){
+ updatePlayer();
+ animate(player,playerSprites);
+ animate(enemy,enemySprites);
+ applyDamage();
+ draw();
+ requestAnimationFrame(loop);
 }
 loop();
 </script>
