@@ -387,15 +387,15 @@ function draw(){
  
  if (gameOver) {
     ctx.fillStyle = "rgba(0,0,0,0,6)";
-    ctx.fillRect(0, 0, canvas.width / GAME_SCALE,
-        canvas.height / GAME_SCALE);
+    ctx.fillRect(0, 0, canvas.width,
+        canvas.height);
         
         ctx.fillStyle = "red";
         ctx.font = "48px Arial";
         ctx.textAlign = "center";
         ctx.fillText("GAME OVER", 
-        (canvas.width / GAME_SCALE) / 2,
-        (canvas.height / GAME_SCALE) / 2);
+        canvas.width / 2,
+        canvas.height / 2);
  }
     
  ctx.restore();    
