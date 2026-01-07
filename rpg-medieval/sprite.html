@@ -66,6 +66,7 @@ const playerSprites = {
  attack3:{src:"Sprites/Knight/Attack_3.png",frames:4},
  shield:{src:"Sprites/Knight/Shield.png",frames:2},
  dead:{src:"Sprites/Knight/Dead.png",frames:3}
+ hurt:{src:"Sprites/Knight/Hurt.png",frames:3}
 };
 for(let s in playerSprites){
  playerSprites[s].img=new Image();
@@ -231,6 +232,11 @@ function enemyAttack(){
  if(rectsCollide(hitbox,playerBox)){
   player.hp -= 10;
   if(player.hp < 0) player.hp = 0;
+
+  if(player.hp > 0){
+    player.state = "hurt";
+    resetAnim(player);
+  }
  }
 }
 
@@ -289,6 +295,10 @@ function animate(e,sprites){
    if(e===enemy && e.state==="dead" && enemy.dying){
     enemy.remove=true;
     enemy.alive=false;
+   }
+
+   if(e===player && e.state==="hurt"){
+    e.state = "idle";
    }
   }
  }
