@@ -3,19 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <title>RPG Medieval 2D</title>
-
 <style>
-body {
-    margin: 0;
-    background: #111;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+body{
+    margin:0;
+    background:#111;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
 }
-canvas {
-    background: linear-gradient(#6ec6ff, #b3e5fc);
-    image-rendering: pixelated;
+canvas{
+    background:linear-gradient(#6ec6ff,#b3e5fc);
+    image-rendering:pixelated;
 }
 </style>
 </head>
@@ -35,235 +34,223 @@ const FRAME_SIZE = 128;
 // SPRITES PLAYER
 // =======================
 const playerSprites = {
-    idle:    { src: "Sprites/Knight/Idle.png", frames: 6 },
-    run:     { src: "Sprites/Knight/Run.png", frames: 8 },
-    jump:    { src: "Sprites/Knight/Jump.png", frames: 10 },
-    attack1: { src: "Sprites/Knight/Attack_1.png", frames: 4 },
-    attack2: { src: "Sprites/Knight/Attack_2.png", frames: 3 },
-    attack3: { src: "Sprites/Knight/Attack_3.png", frames: 4 },
-    shield:  { src: "Sprites/Knight/Shield.png", frames: 2 },
-    dead:    { src: "Sprites/Knight/Dead.png", frames: 3 }
+ idle:{src:"Sprites/Knight/Idle.png",frames:6},
+ run:{src:"Sprites/Knight/Run.png",frames:8},
+ jump:{src:"Sprites/Knight/Jump.png",frames:10},
+ attack1:{src:"Sprites/Knight/Attack_1.png",frames:4},
+ attack2:{src:"Sprites/Knight/Attack_2.png",frames:3},
+ attack3:{src:"Sprites/Knight/Attack_3.png",frames:4},
+ shield:{src:"Sprites/Knight/Shield.png",frames:2},
+ dead:{src:"Sprites/Knight/Dead.png",frames:3}
 };
-
-for (let s in playerSprites) {
-    playerSprites[s].img = new Image();
-    playerSprites[s].img.src = playerSprites[s].src;
+for(let s in playerSprites){
+ playerSprites[s].img=new Image();
+ playerSprites[s].img.src=playerSprites[s].src;
 }
 
 // =======================
 // SPRITES ENEMY
 // =======================
-const enemySprites = {
-    idle:   { src: "Sprites/Knight/Enemy/Idle.png", frames: 6 },
-    walk:   { src: "Sprites/Knight/Enemy/Walk.png", frames: 10 },
-    attack: { src: "Sprites/Knight/Enemy/Attack.png", frames: 5 },
-    hurt:   { src: "Sprites/Knight/Enemy/Hurt.png", frames: 4 },
-    dead:   { src: "Sprites/Knight/Enemy/Dead.png", frames: 5 }
+const enemySprites={
+ idle:{src:"Sprites/Knight/Enemy/Idle.png",frames:6},
+ walk:{src:"Sprites/Knight/Enemy/Walk.png",frames:10},
+ attack:{src:"Sprites/Knight/Enemy/Attack.png",frames:5},
+ hurt:{src:"Sprites/Knight/Enemy/Hurt.png",frames:4},
+ dead:{src:"Sprites/Knight/Enemy/Dead.png",frames:5}
 };
-
-for (let s in enemySprites) {
-    enemySprites[s].img = new Image();
-    enemySprites[s].img.src = enemySprites[s].src;
+for(let s in enemySprites){
+ enemySprites[s].img=new Image();
+ enemySprites[s].img.src=enemySprites[s].src;
 }
 
 // =======================
 // PLAYER
 // =======================
-const player = {
-    x: 150,
-    y: GROUND_Y - 96,
-    w: 96,
-    h: 96,
-    vx: 0,
-    vy: 0,
-    speed: 4,
-    jumpForce: -12,
-    grounded: true,
-    facing: 1,
-
-    state: "idle",
-    frame: 0,
-    frameTime: 0,
-
-    attacking: false,
-    shielding: false,
-    attackToggle: false,
-
-    // ❤️ VIDA (NUEVO)
-    maxHp: 100,
-    hp: 100
+const player={
+ x:150,y:GROUND_Y-96,w:96,h:96,
+ vx:0,vy:0,speed:4,jumpForce:-12,
+ grounded:true,facing:1,
+ state:"idle",frame:0,frameTime:0,
+ attacking:false,shielding:false,attackToggle:false,
+ maxHp:100,hp:100
 };
 
 // =======================
 // ENEMY
 // =======================
-const enemy = {
-    x: 700,
-    y: GROUND_Y - 96,
-    w: 96,
-    h: 96,
-    state: "idle",
-    frame: 0,
-    frameTime: 0,
-    facing: -1,
-
-    // ❤️ VIDA (NUEVO)
-    maxHp: 100,
-    hp: 100
+const enemy={
+ x:700,y:GROUND_Y-96,w:96,h:96,
+ state:"idle",frame:0,frameTime:0,
+ facing:-1,
+ maxHp:100,hp:100,
+ alive:true
 };
 
 // =======================
 // INPUT
 // =======================
-const keys = {};
+const keys={};
+window.addEventListener("keydown",e=>{
+ if(keys[e.key])return;
+ keys[e.key]=true;
 
-window.addEventListener("keydown", e => {
-    if (keys[e.key]) return;
-    keys[e.key] = true;
-
-    if (e.key === "j" && !player.attacking && !player.shielding) {
-        player.attacking = true;
-        player.attackToggle = !player.attackToggle;
-        player.state = player.attackToggle ? "attack1" : "attack2";
-        resetAnim(player);
-    }
-
-    if (e.key === "k" && !player.attacking && !player.shielding) {
-        player.attacking = true;
-        player.state = "attack3";
-        resetAnim(player);
-    }
-
-    if (e.key === "s" && !player.attacking) {
-        player.shielding = true;
-        player.state = "shield";
-        resetAnim(player);
-    }
+ if(e.key==="j"&&!player.attacking&&!player.shielding){
+  player.attacking=true;
+  player.attackToggle=!player.attackToggle;
+  player.state=player.attackToggle?"attack1":"attack2";
+  resetAnim(player);
+ }
+ if(e.key==="k"&&!player.attacking&&!player.shielding){
+  player.attacking=true;
+  player.state="attack3";
+  resetAnim(player);
+ }
+ if(e.key==="s"&&!player.attacking){
+  player.shielding=true;
+  player.state="shield";
+  resetAnim(player);
+ }
 });
-
-window.addEventListener("keyup", e => {
-    keys[e.key] = false;
-    if (e.key === "s") player.shielding = false;
+window.addEventListener("keyup",e=>{
+ keys[e.key]=false;
+ if(e.key==="s")player.shielding=false;
 });
 
 // =======================
 // UPDATE PLAYER
 // =======================
-function updatePlayer() {
+function updatePlayer(){
+ if(!player.attacking&&!player.shielding){
+  player.vx=0;
+  if(keys["a"]){player.vx=-player.speed;player.facing=-1;player.state="run";}
+  else if(keys["d"]){player.vx=player.speed;player.facing=1;player.state="run";}
+  else if(player.grounded)player.state="idle";
 
-    if (!player.attacking && !player.shielding) {
-        player.vx = 0;
+  if(keys["w"]&&player.grounded){
+   player.vy=player.jumpForce;
+   player.grounded=false;
+   player.state="jump";
+   resetAnim(player);
+  }
+ }
+ player.vy+=GRAVITY;
+ player.x+=player.vx;
+ player.y+=player.vy;
+ if(player.y+player.h>=GROUND_Y){
+  player.y=GROUND_Y-player.h;
+  player.vy=0;
+  player.grounded=true;
+ }
+}
 
-        if (keys["a"]) {
-            player.vx = -player.speed;
-            player.facing = -1;
-            player.state = "run";
-        } else if (keys["d"]) {
-            player.vx = player.speed;
-            player.facing = 1;
-            player.state = "run";
-        } else if (player.grounded) {
-            player.state = "idle";
-        }
+// =======================
+// HITBOX & DAÑO (NUEVO)
+// =======================
+function rectsCollide(a,b){
+ return a.x<a.x+b.w&&a.x+a.w>b.x&&a.y<a.y+b.h&&a.y+a.h>b.y;
+}
 
-        if (keys["w"] && player.grounded) {
-            player.vy = player.jumpForce;
-            player.grounded = false;
-            player.state = "jump";
-            resetAnim(player);
-        }
-    }
+function getAttackHitbox(){
+ if(!player.attacking)return null;
 
-    player.vy += GRAVITY;
-    player.x += player.vx;
-    player.y += player.vy;
+ const size=40;
+ const offset=player.facing===1?player.w-10:-size+10;
 
-    if (player.y + player.h >= GROUND_Y) {
-        player.y = GROUND_Y - player.h;
-        player.vy = 0;
-        player.grounded = true;
-    }
+ return{
+  x:player.x+offset,
+  y:player.y+30,
+  w:size,
+  h:30
+ };
+}
+
+function applyDamage(){
+ if(!enemy.alive)return;
+ const hitbox=getAttackHitbox();
+ if(!hitbox)return;
+
+ const enemyBox={x:enemy.x,y:enemy.y,w:enemy.w,h:enemy.h};
+ if(rectsCollide(hitbox,enemyBox)){
+  enemy.hp-=10;
+  enemy.state="hurt";
+  resetAnim(enemy);
+  if(enemy.hp<=0){
+   enemy.hp=0;
+   enemy.alive=false;
+   enemy.state="dead";
+   resetAnim(enemy);
+  }
+ }
 }
 
 // =======================
 // ANIMATION
 // =======================
-function resetAnim(e) {
-    e.frame = 0;
-    e.frameTime = 0;
-}
-
-function animate(e, sprites) {
-    e.frameTime++;
-    if (e.frameTime >= 6) {
-        e.frame++;
-        e.frameTime = 0;
-
-        if (e.frame >= sprites[e.state].frames) {
-            e.frame = 0;
-            if (e === player && e.attacking) {
-                e.attacking = false;
-                e.state = "idle";
-            }
-        }
-    }
+function resetAnim(e){e.frame=0;e.frameTime=0;}
+function animate(e,sprites){
+ e.frameTime++;
+ if(e.frameTime>=6){
+  e.frame++;
+  e.frameTime=0;
+  if(e.frame>=sprites[e.state].frames){
+   e.frame=0;
+   if(e===player&&e.attacking){
+    e.attacking=false;
+    e.state="idle";
+   }
+  }
+ }
 }
 
 // =======================
 // DRAW
 // =======================
-function drawEntity(e, sprites, flip) {
-    const s = sprites[e.state];
-    ctx.save();
-    ctx.translate(flip ? e.x + e.w : e.x, e.y);
-    ctx.scale(flip ? -1 : 1, 1);
-    ctx.drawImage(
-        s.img,
-        e.frame * FRAME_SIZE, 0,
-        FRAME_SIZE, FRAME_SIZE,
-        0, 0,
-        e.w, e.h
-    );
-    ctx.restore();
+function drawEntity(e,sprites,flip){
+ const s=sprites[e.state];
+ ctx.save();
+ ctx.translate(flip?e.x+e.w:e.x,e.y);
+ ctx.scale(flip?-1:1,1);
+ ctx.drawImage(
+  s.img,
+  e.frame*FRAME_SIZE,0,
+  FRAME_SIZE,FRAME_SIZE,
+  0,0,
+  e.w,e.h
+ );
+ ctx.restore();
 }
 
-// ❤️ BARRA DE VIDA (NUEVO)
-function drawHealthBar(e) {
-    const barW = e.w;
-    const barH = 8;
-    const hpRatio = e.hp / e.maxHp;
-
-    ctx.fillStyle = "red";
-    ctx.fillRect(e.x, e.y - 12, barW, barH);
-
-    ctx.fillStyle = "lime";
-    ctx.fillRect(e.x, e.y - 12, barW * hpRatio, barH);
+function drawHealthBar(e){
+ const r=e.hp/e.maxHp;
+ ctx.fillStyle="red";
+ ctx.fillRect(e.x,e.y-12,e.w,8);
+ ctx.fillStyle="lime";
+ ctx.fillRect(e.x,e.y-12,e.w*r,8);
 }
 
-function draw() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+function draw(){
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+ ctx.fillStyle="#2e7d32";
+ ctx.fillRect(0,GROUND_Y,canvas.width,60);
 
-    ctx.fillStyle = "#2e7d32";
-    ctx.fillRect(0, GROUND_Y, canvas.width, 60);
+ drawEntity(player,playerSprites,player.facing===-1);
+ if(enemy.alive)drawEntity(enemy,enemySprites,true);
 
-    drawEntity(player, playerSprites, player.facing === -1);
-    drawEntity(enemy, enemySprites, true);
-
-    drawHealthBar(player);
-    drawHealthBar(enemy);
+ drawHealthBar(player);
+ drawHealthBar(enemy);
 }
 
 // =======================
 // LOOP
 // =======================
-function loop() {
-    updatePlayer();
-    animate(player, playerSprites);
-    animate(enemy, enemySprites);
-    draw();
-    requestAnimationFrame(loop);
+function loop(){
+ updatePlayer();
+ animate(player,playerSprites);
+ animate(enemy,enemySprites);
+ applyDamage();
+ draw();
+ requestAnimationFrame(loop);
 }
-
 loop();
 </script>
 </body>
