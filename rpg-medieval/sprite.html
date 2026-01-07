@@ -60,6 +60,37 @@ let gamePaused = false;
 let deathTimer = 0;    
 let playerDead = false;
 let gameOver = false;
+
+let level = 1;
+let exp = 0;
+let expToNext = 100;
+
+function gainExp(amount){
+    playerExp += amount;
+
+    if(playerExp >= expToNextLevel){
+        playerExp -= expToNextLevel;
+        expToNextLevel = Math.floor(expToNextLevel * 1.4);
+
+        console.log("SUBISTE A NIVEL" playerLevel);
+
+        onLevelUp();
+    }
+}
+
+function onLevelUp(){
+    player.maxHp += 20;
+    player.hp = player.maxHp;
+    player.speed += 0.3;
+}
+
+function levelUp(){
+    player.level++;
+    player.exp = 0;
+    player.nextLevelExp = Math.floor(player.nextLevelExp * 1.4);
+
+    onLevelUp();
+}
     
     
 // =======================    
@@ -308,7 +339,9 @@ function applyDamage(){
    enemy.hp=0;    
    enemy.dying=true;    
    enemy.state="dead";    
-   resetAnim(enemy);    
+   resetAnim(enemy); 
+   
+   gainExp(50);
   }    
  }    
 }    
@@ -398,9 +431,36 @@ function draw(){
         (canvas.width / GAME_SCALE) / 2,
         (canvas.height / GAME_SCALE) / 2);
  }
+
+drawExpBar();
+ 
+ctx.restore();
+}
+ function drawExpBar(){
+    ctx.save();
+    const barX = 20;
+    const barY = 20;
+    const barWidth = 200;
+    const barHeight = 14;
+
+    const ratio = exp / expToNext;
     
- ctx.restore();    
-}    
+    ctx.fillStyle = "#333";
+    ctx.fillRect(barX, barY, barWidth, barHeight);
+
+    ctx.fillStyle = "#4fc3f7";
+    ctx.fillRect(barX, barY, barWidth, barHeight);
+
+    ctx.strokeStyle = "white";
+    ctx.strokeRect(barX, barY, barWidth, barHeight);
+
+    ctx.fillStyle "white";
+    ctx.font = "14px Arial";
+    ctx.fillText("Lv " + level, barX, barY - 5);
+
+    ctx.restore();
+ }  
+    
     
 // =======================    
 // LOOP    
