@@ -202,6 +202,28 @@ function updatePlayer(){
   player.grounded=true;
  }
 }
+function updateEnemyAI(){
+    if(!enemy.alive || enemy.dying ||
+        enemy.remove || playerDead) return;
+
+    const dist = player.x - enemy.x;
+    enemy.facing = dist < 0 ? -1 : 1;
+    
+    if(Math.abs(dist) > 90){
+        enemy.x += enemy.speed * enemy.facing;
+        enemy.state = "walk";
+    }else{
+        enemy.state = "attack";
+        if(enemy.attackCooldown <= 0){
+            enemy.attackCooldown = 60;
+            enemyAttack();
+        }
+    }
+
+    if enemy.attackCooldown > 0)
+    enemy.attackCooldown--;
+
+}
 
 // =======================
 // ENEMY ATTACK (FIX)
