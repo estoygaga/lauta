@@ -33,14 +33,16 @@ const gravity = 0.6;
 const groundY = canvas.height - 50;
 
 // =======================
-// SPRITES PLAYER
+// SPRITES
 // =======================
 const sprites = {
     idle:    { img: "Sprites/Knight/Idle.png", frames: 6 },
     run:     { img: "Sprites/Knight/Run.png", frames: 8 },
     jump:    { img: "Sprites/Knight/Jump.png", frames: 10 },
     attack1: { img: "Sprites/Knight/Attack_1.png", frames: 4 },
-    attack2: { img: "Sprites/Knight/Attack_2.png", frames: 3 }
+    attack2: { img: "Sprites/Knight/Attack_2.png", frames: 3 },
+    kick:    { img: "Sprites/Knight/Attack_3.png", frames: 4 },
+    shield:  { img: "Sprites/Knight/Shield.png", frames: 2 }
 };
 
 for (let s in sprites) {
@@ -65,7 +67,8 @@ const player = {
     frame: 0,
     frameTime: 0,
     facing: 1,
-    isAttacking: false,
+
+    isActing: false,
     attackToggle: false,
     damage: 10
 };
@@ -102,7 +105,7 @@ function update() {
 
     player.vx = 0;
 
-    if (!player.isAttacking) {
+    if (!player.isActing) {
 
         if (keys["a"]) {
             player.vx = -player.speed;
@@ -122,11 +125,12 @@ function update() {
             player.state = "jump";
         }
 
-        if (keys["j"] && !player.isAttacking) {
-            player.isAttacking = true;
-            player.frame = 0;
-            player.state = player.attackToggle ? "attack2" : "attack1";
+        if (keys["j"]) {
+            startAction(player.attackToggle ? "attack2" : "attack1");
         }
+
+        if (keys["k"]) startAction("kick");
+        if (keys["s"]) startAction("shield");
     }
 
     player.vy += gravity;
@@ -145,11 +149,23 @@ function update() {
 }
 
 // =======================
-// HITBOX + DAÑO
+// ACCIONES
+// =======================
+function startAction(type) {
+    if (player.isActing) return;
+    player.isActing = true;
+    player.state = type;
+    player.frame = 0;
+    player.frameTime = 0;
+}
+
+// =======================
+// HITBOX + DAÑO (AJUSTADA)
 // =======================
 function handleHit() {
 
-    if (!player.isAttacking) return;
+    if (!player.isActing) return;
+    if (!["attack1","attack2","kick"].includes(player.state)) return;
     if (enemy.life <= 0) return;
     if (enemy.hitCooldown > 0) {
         enemy.hitCooldown--;
@@ -157,16 +173,17 @@ function handleHit() {
     }
 
     const hitbox = {
-        x: player.facing === 1 ? player.x + player.w : player.x - 40,
-        y: player.y + 20,
-        w: 40,
-        h: 40
+        x: player.facing === 1
+            ? player.x + player.w - 10
+            : player.x - 18,
+        y: player.y + 30,
+        w: 28,
+        h: 30
     };
 
     if (rectsOverlap(hitbox, enemy)) {
         enemy.life -= player.damage;
         enemy.hitCooldown = 20;
-        console.log("Enemy life:", enemy.life);
     }
 }
 
@@ -190,11 +207,13 @@ function animatePlayer() {
 
         if (player.frame >= max) {
             player.frame = 0;
+            player.isActing = false;
+
             if (player.state === "attack1" || player.state === "attack2") {
-                player.isAttacking = false;
                 player.attackToggle = !player.attackToggle;
-                player.state = "idle";
             }
+
+            player.state = "idle";
         }
         player.frameTime = 0;
     }
@@ -239,7 +258,6 @@ function draw() {
             enemy.facing
         );
 
-        // VIDA ENEMIGO
         ctx.fillStyle = "red";
         ctx.fillRect(enemy.x, enemy.y - 10, enemy.w * (enemy.life / 100), 5);
     }
