@@ -84,7 +84,11 @@ const enemy={
  facing:-1,
  maxHp:100,hp:100,
  alive:true,
- justHit:false   // ← NUEVO (control de daño)
+ justHit:false,
+
+ // 🔥 AGREGADO
+ dying:false,
+ remove:false
 };
 
 // =======================
@@ -164,7 +168,7 @@ function getAttackHitbox(){
 }
 
 function applyDamage(){
- if(!enemy.alive)return;
+ if(!enemy.alive || enemy.dying)return;
 
  const hitbox=getAttackHitbox();
  if(!hitbox||enemy.justHit)return;
@@ -172,14 +176,14 @@ function applyDamage(){
  const enemyBox={x:enemy.x,y:enemy.y,w:enemy.w,h:enemy.h};
  if(rectsCollide(hitbox,enemyBox)){
   enemy.justHit=true;
-  enemy.hp-=15; // daño realista
+  enemy.hp-=15;
 
   enemy.state="hurt";
   resetAnim(enemy);
 
   if(enemy.hp<=0){
    enemy.hp=0;
-   enemy.alive=false;
+   enemy.dying=true;
    enemy.state="dead";
    resetAnim(enemy);
   }
@@ -202,7 +206,13 @@ function animate(e,sprites){
    if(e===player&&e.attacking){
     e.attacking=false;
     e.state="idle";
-    enemy.justHit=false; // ← libera daño para próximo ataque
+    enemy.justHit=false;
+   }
+
+   // 🔥 DESAPARECER TRAS DEAD
+   if(e===enemy && e.state==="dead" && enemy.dying){
+    enemy.remove=true;
+    enemy.alive=false;
    }
   }
  }
@@ -240,10 +250,13 @@ function draw(){
  ctx.fillRect(0,GROUND_Y,canvas.width,60);
 
  drawEntity(player,playerSprites,player.facing===-1);
- drawEntity(enemy,enemySprites,true);
+
+ if(!enemy.remove){
+  drawEntity(enemy,enemySprites,true);
+  drawHealthBar(enemy);
+ }
 
  drawHealthBar(player);
- drawHealthBar(enemy);
 }
 
 // =======================
