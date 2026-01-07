@@ -186,7 +186,8 @@ function respawnPlayer() {
     player.x = 100;    
     player.y = 300;    
     player.hp = player.maxHp;    
-    player.dead = false;    
+    playerDead = false;
+    gameOver = false;    
     
     respawnBtn.style.display = "none";    
     gamePaused = false;    
@@ -386,16 +387,16 @@ function draw(){
  drawHealthBar(player); 
  
  if (gameOver) {
-    ctx.fillStyle = "rgba(0,0,0,0,6)";
-    ctx.fillRect(0, 0, canvas.width,
-        canvas.height);
+    ctx.fillStyle = "rgba(0,0,0,0.6)";
+    ctx.fillRect(0, 0, canvas.width / GAME_SCALE,
+        canvas.height / GAME_SCALE);
         
         ctx.fillStyle = "red";
         ctx.font = "48px Arial";
         ctx.textAlign = "center";
         ctx.fillText("GAME OVER", 
-        canvas.width / 2,
-        canvas.height / 2);
+        (canvas.width / GAME_SCALE) / 2,
+        (canvas.height / GAME_SCALE) / 2);
  }
     
  ctx.restore();    
@@ -404,7 +405,20 @@ function draw(){
 // =======================    
 // LOOP    
 // =======================    
-function loop(){    
+function loop(){   
+    
+    if (!playerDead && player.hp <= 0) {
+        playerDead = true;
+        gameOver = true;
+        gamePaused = true;
+
+        player.state = "dead";
+        player.vx = 0;
+        player.vy = 0;
+        resetAnim(player);
+
+        respawnBtn.style.display = "block";
+    }
     
     if(gamePaused){    
         draw();    
@@ -417,14 +431,6 @@ function loop(){
  animate(enemy,enemySprites);    
  applyDamage();    
     
- // 🔥 AGREGADO – DETECTAR MUERTE PLAYER    
- if(!playerDead && player.hp <= 0){    
-  playerDead = true;    
-  player.state = "dead";    
-  player.vx = 0;    
-  player.vy = 0;    
-  resetAnim(player);    
- }    
     
  draw();    
  requestAnimationFrame(loop);    
