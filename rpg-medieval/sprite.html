@@ -432,7 +432,9 @@ function draw(){
         (canvas.height / GAME_SCALE) / 2);
  }
 
-drawExpBar();
+if (!gameOver) {
+    drawExpBar();
+}
  
 ctx.restore();
 }
@@ -449,12 +451,12 @@ ctx.restore();
     ctx.fillRect(barX, barY, barWidth, barHeight);
 
     ctx.fillStyle = "#4fc3f7";
-    ctx.fillRect(barX, barY, barWidth, barHeight);
+    ctx.fillRect(barX, barY, barWidth * ratio, barHeight);
 
     ctx.strokeStyle = "white";
     ctx.strokeRect(barX, barY, barWidth, barHeight);
 
-    ctx.fillStyle "white";
+    ctx.fillStyle = "white";
     ctx.font = "14px Arial";
     ctx.fillText("Lv " + level, barX, barY - 5);
 
