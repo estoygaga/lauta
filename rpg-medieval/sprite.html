@@ -16,11 +16,33 @@ canvas{
     background:linear-gradient(#6ec6ff,#b3e5fc);
     image-rendering:pixelated;
 }
+
+#pauseBtn{
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 8px 14px;
+    font-size: 16px;
+    cursor: pointer;
+    z-index: 10;
+}
 </style>
 </head>
 
 <body>
 <canvas id="game" width="1000" height="500"></canvas>
+
+<button id="pauseBtn"
+style="position: fixed;
+top: 10px;
+right: 10px;
+padding: 10px 18px;
+font-size: 16px;
+cursor: pointer;
+z-index: 10;
+">
+⏸️ Pausa
+</button>
 
 <script>
 const canvas = document.getElementById("game");
@@ -29,6 +51,8 @@ const ctx = canvas.getContext("2d");
 const GRAVITY = 0.6;
 const GROUND_Y = canvas.height - 60;
 const FRAME_SIZE = 128;
+
+let gamePaused = false;
 
 // =======================
 // SPRITES PLAYER
@@ -130,6 +154,12 @@ window.addEventListener("keyup",e=>{
  keys[e.key]=false;
  if(e.key==="s")player.shielding=false;
 });
+const pauseBtn = document.getElementById("pauseBtn");
+pauseBtn.addEventListener("click", ()=>{
+    gamePaused = !gamePaused;
+    pauseBtn.textContent = gamePaused ?
+ "Renaudar" : "⏸️ Pausa";    
+}); 
 
 // =======================
 // UPDATE PLAYER
@@ -308,6 +338,12 @@ function draw(){
 // LOOP
 // =======================
 function loop(){
+
+    if(gamePaused){
+        draw();
+        requestAnimationFrame(loop);
+        return;
+    }
  updatePlayer();
  updateEnemyAI();
  animate(player,playerSprites);
