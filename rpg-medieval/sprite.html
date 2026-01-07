@@ -327,7 +327,7 @@ function draw(){
  drawEntity(player,playerSprites,player.facing===-1);
 
  if(!enemy.remove){
-  drawEntity(enemy,enemySprites,enemy.facing===-1);
+  drawEntity(enemy,enemySprites,enemy.facing=== -1);
   drawHealthBar(enemy);
  }
 
