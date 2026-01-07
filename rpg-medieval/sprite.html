@@ -245,7 +245,7 @@ function updateEnemyAI(){
 // ENEMY ATTACK    
 // =======================    
 function enemyAttack(){    
- if(player.shielding || playerDead) return;    
+ if(player.shielding || playerDead) return;
     
  const hitbox={    
   x: enemy.facing===1 ? enemy.x+enemy.w-10 : enemy.x-30,    
@@ -258,10 +258,11 @@ function enemyAttack(){
   player.hp -= 10;    
   if(player.hp < 0) player.hp = 0;    
     
-  if(player.hp > 0){    
+  if(player.hp > 0 && !playerDead){    
     player.state = "hurt";    
     resetAnim(player);    
-  }    
+  }
+  
   if (player.hp === 0 && !gameOver) {    
     if (player.state !== "dead") {    
         player.state = "dead";    
