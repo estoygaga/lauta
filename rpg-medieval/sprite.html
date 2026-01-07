@@ -433,13 +433,14 @@ function draw(){
         (canvas.height / GAME_SCALE) / 2);
  }
 
-if (!gameOver) {
-    drawExpBar();
+ drawExpBar();
+ 
 }
  
 ctx.restore();
 }
- function drawExpBar(){
+ 
+function drawExpBar(){
     ctx.save();
     const barX = 20;
     const barY = 20;
