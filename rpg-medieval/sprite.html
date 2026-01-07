@@ -85,16 +85,19 @@ const enemy={
  maxHp:100,hp:100,
  alive:true,
  justHit:false,
-
  dying:false,
- remove:false
+ remove:false,
+
+ // 🔥 AGREGADO – IA
+ speed:1.2,
+ attackCooldown:0
 };
 
 // =======================
 // 🔥 AGREGADO – RESPAWN ENEMY
 // =======================
 let enemyRespawnTimer = 0;
-const ENEMY_RESPAWN_TIME = 180; // ~3 segundos
+const ENEMY_RESPAWN_TIME = 180;
 
 // =======================
 // INPUT
@@ -154,7 +157,49 @@ function updatePlayer(){
 }
 
 // =======================
-// HITBOX & DAÑO
+// 🔥 AGREGADO – UPDATE ENEMY IA
+// =======================
+function updateEnemyAI(){
+ if(!enemy.alive || enemy.dying || enemy.remove) return;
+
+ const dist = player.x - enemy.x;
+ enemy.facing = dist < 0 ? -1 : 1;
+
+ if(Math.abs(dist) > 90){
+  enemy.x += enemy.speed * enemy.facing;
+  enemy.state = "walk";
+ }else{
+  enemy.state = "attack";
+  if(enemy.attackCooldown <= 0){
+   enemy.attackCooldown = 60;
+   enemyAttack();
+  }
+ }
+
+ if(enemy.attackCooldown > 0) enemy.attackCooldown--;
+}
+
+// =======================
+// 🔥 AGREGADO – ENEMY HITBOX
+// =======================
+function enemyAttack(){
+ if(player.shielding) return;
+
+ const hitbox={
+  x: enemy.facing===1 ? enemy.x+enemy.w-10 : enemy.x-30,
+  y: enemy.y+30,
+  w:30,h:30
+ };
+
+ const playerBox={x:player.x,y:player.y,w:player.w,h:player.h};
+ if(rectsCollide(hitbox,playerBox)){
+  player.hp -= 10;
+  if(player.hp < 0) player.hp = 0;
+ }
+}
+
+// =======================
+// HITBOX & DAÑO PLAYER
 // =======================
 function rectsCollide(a,b){
  return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
@@ -164,28 +209,19 @@ function getAttackHitbox(){
  if(!player.attacking)return null;
  const size=40;
  const offset=player.facing===1?player.w-10:-size+10;
- return{
-  x:player.x+offset,
-  y:player.y+30,
-  w:size,
-  h:30
- };
+ return{x:player.x+offset,y:player.y+30,w:size,h:30};
 }
 
 function applyDamage(){
  if(!enemy.alive || enemy.dying)return;
-
  const hitbox=getAttackHitbox();
  if(!hitbox||enemy.justHit)return;
-
  const enemyBox={x:enemy.x,y:enemy.y,w:enemy.w,h:enemy.h};
  if(rectsCollide(hitbox,enemyBox)){
   enemy.justHit=true;
   enemy.hp-=15;
-
   enemy.state="hurt";
   resetAnim(enemy);
-
   if(enemy.hp<=0){
    enemy.hp=0;
    enemy.dying=true;
@@ -207,13 +243,11 @@ function animate(e,sprites){
   e.frameTime=0;
   if(e.frame>=sprites[e.state].frames){
    e.frame=0;
-
    if(e===player&&e.attacking){
     e.attacking=false;
     e.state="idle";
     enemy.justHit=false;
    }
-
    if(e===enemy && e.state==="dead" && enemy.dying){
     enemy.remove=true;
     enemy.alive=false;
@@ -223,20 +257,20 @@ function animate(e,sprites){
 }
 
 // =======================
-// 🔥 AGREGADO – RESPAWN FUNCIÓN
+// RESPAWN ENEMY
 // =======================
 function respawnEnemy(){
- enemy.hp = enemy.maxHp;
- enemy.state = "idle";
- enemy.frame = 0;
- enemy.frameTime = 0;
- enemy.alive = true;
- enemy.dying = false;
- enemy.remove = false;
- enemy.justHit = false;
- enemy.x = 700;
- enemy.y = GROUND_Y - enemy.h;
- enemyRespawnTimer = 0;
+ enemy.hp=enemy.maxHp;
+ enemy.state="idle";
+ enemy.frame=0;
+ enemy.frameTime=0;
+ enemy.alive=true;
+ enemy.dying=false;
+ enemy.remove=false;
+ enemy.justHit=false;
+ enemy.x=700;
+ enemy.y=GROUND_Y-enemy.h;
+ enemyRespawnTimer=0;
 }
 
 // =======================
@@ -247,13 +281,7 @@ function drawEntity(e,sprites,flip){
  ctx.save();
  ctx.translate(flip?e.x+e.w:e.x,e.y);
  ctx.scale(flip?-1:1,1);
- ctx.drawImage(
-  s.img,
-  e.frame*FRAME_SIZE,0,
-  FRAME_SIZE,FRAME_SIZE,
-  0,0,
-  e.w,e.h
- );
+ ctx.drawImage(s.img,e.frame*FRAME_SIZE,0,FRAME_SIZE,FRAME_SIZE,0,0,e.w,e.h);
  ctx.restore();
 }
 
@@ -273,7 +301,7 @@ function draw(){
  drawEntity(player,playerSprites,player.facing===-1);
 
  if(!enemy.remove){
-  drawEntity(enemy,enemySprites,true);
+  drawEntity(enemy,enemySprites,enemy.facing===1);
   drawHealthBar(enemy);
  }
 
@@ -285,14 +313,14 @@ function draw(){
 // =======================
 function loop(){
  updatePlayer();
+ updateEnemyAI(); // 🔥 AGREGADO
  animate(player,playerSprites);
  animate(enemy,enemySprites);
  applyDamage();
 
- // 🔥 AGREGADO – TIMER RESPAWN
  if(enemy.remove){
   enemyRespawnTimer++;
-  if(enemyRespawnTimer >= ENEMY_RESPAWN_TIME){
+  if(enemyRespawnTimer>=ENEMY_RESPAWN_TIME){
    respawnEnemy();
   }
  }
@@ -304,6 +332,3 @@ loop();
 </script>
 </body>
 </html>
-
-
-
