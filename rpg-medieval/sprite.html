@@ -32,17 +32,7 @@ canvas{
 <body>
 <canvas id="game" width="1000" height="500"></canvas>
 
-<button id="pauseBtn"
-style="position: fixed;
-top: 10px;
-right: 10px;
-padding: 10px 18px;
-font-size: 16px;
-cursor: pointer;
-z-index: 10;
-">
-⏸️ Pausa
-</button>
+<button id="pauseBtn">⏸️ Pausa</button>
 
 <button id="respawnBtn" style="
 position: fixed;
@@ -68,8 +58,8 @@ const FRAME_SIZE = 128;
 const GAME_SCALE = 1.5;
 
 let gamePaused = false;
+let gameOver = false;
 let deathTimer = 0;
-
 
 // =======================
 // SPRITES PLAYER
@@ -117,10 +107,7 @@ const player={
  maxHp:100,hp:100
 };
 
-// 🔥 AGREGADO – CONTROL MUERTE PLAYER
 let playerDead = false;
-
-let showGameOver = false;
 
 // =======================
 // ENEMY
@@ -134,16 +121,9 @@ const enemy={
  justHit:false,
  dying:false,
  remove:false,
-
  speed:1.2,
  attackCooldown:0
 };
-
-// =======================
-// RESPAWN ENEMY
-// =======================
-let enemyRespawnTimer = 0;
-const ENEMY_RESPAWN_TIME = 180;
 
 // =======================
 // INPUT
@@ -174,36 +154,30 @@ window.addEventListener("keyup",e=>{
  keys[e.key]=false;
  if(e.key==="s")player.shielding=false;
 });
-const pauseBtn = document.getElementById("pauseBtn");
-pauseBtn.addEventListener("click", ()=>{
-    gamePaused = !gamePaused;
-    pauseBtn.textContent = gamePaused ?
- "Renaudar" : "⏸️ Pausa";    
-}); 
-const respawnBtn = document.getElementById("respawnBtn");
-respawnBtn.addEventListener("click",
-    ()=>{
-        respawnPlayer();
-    
-});
 
-function respawnPlayer() {
-    player.x = 100;
-    player.y = 300;
-    player.health = player.maxHealth;
-    player.dead = false;
+// =======================
+// BOTONES
+// =======================
+pauseBtn.onclick = ()=>{
+ gamePaused = !gamePaused;
+ pauseBtn.textContent = gamePaused ? "Reanudar" : "⏸️ Pausa";
+};
 
-    respawnBtn.style.display = "none";
-    gamePaused = false;
-}
-
+respawnBtn.onclick = ()=>{
+ player.hp = player.maxHp;
+ playerDead = false;
+ gameOver = false;
+ deathTimer = 0;
+ player.state = "idle";
+ resetAnim(player);
+ respawnBtn.style.display="none";
+ gamePaused=false;
+};
 
 // =======================
 // UPDATE PLAYER
 // =======================
 function updatePlayer(){
-
- // 🔥 AGREGADO – PLAYER MUERTO NO SE MUEVE
  if(playerDead) return;
 
  if(!player.attacking&&!player.shielding){
@@ -230,30 +204,7 @@ function updatePlayer(){
 }
 
 // =======================
-// UPDATE ENEMY IA
-// =======================
-function updateEnemyAI(){
- if(!enemy.alive || enemy.dying || enemy.remove || playerDead) return;
-
- const dist = player.x - enemy.x;
- enemy.facing = dist < 0 ? -1 : 1;
-
- if(Math.abs(dist) > 90){
-  enemy.x += enemy.speed * enemy.facing;
-  enemy.state = "walk";
- }else{
-  enemy.state = "attack";
-  if(enemy.attackCooldown <= 0){
-   enemy.attackCooldown = 60;
-   enemyAttack();
-  }
- }
-
- if(enemy.attackCooldown > 0) enemy.attackCooldown--;
-}
-
-// =======================
-// ENEMY ATTACK
+// ENEMY ATTACK (FIX)
 // =======================
 function enemyAttack(){
  if(player.shielding || playerDead) return;
@@ -269,161 +220,45 @@ function enemyAttack(){
   player.hp -= 10;
   if(player.hp < 0) player.hp = 0;
 
+  // ✅ FIX: el enemigo SOLO hace daño
   if(player.hp > 0){
-    player.state = "hurt";
-    resetAnim(player);
-  }
-  if (player.hp === 0 && !gameOver) {
-    if (player.state !== "dead") {
-        player.state = "dead";
-        resetAnim(player);
-        deathTimer = 60;
-    }
-
-    deathTimer--;
-
-    if (deathTimer <= 0) {
-        gameOver = true;
-        gamePaused = true;
-        respawnBtn.style.display = "block";
-    }
-
-  };
- };
-};
-
-// =======================
-// COLLISION
-// =======================
-function rectsCollide(a,b){
- return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
-}
-
-function getAttackHitbox(){
- if(!player.attacking)return null;
- const size=40;
- const offset=player.facing===1?player.w-10:-size+10;
- return{x:player.x+offset,y:player.y+30,w:size,h:30};
-}
-
-function applyDamage(){
- if(!enemy.alive || enemy.dying)return;
- const hitbox=getAttackHitbox();
- if(!hitbox||enemy.justHit)return;
- const enemyBox={x:enemy.x,y:enemy.y,w:enemy.w,h:enemy.h};
- if(rectsCollide(hitbox,enemyBox)){
-  enemy.justHit=true;
-  enemy.hp-=15;
-  enemy.state="hurt";
-  resetAnim(enemy);
-  if(enemy.hp<=0){
-   enemy.hp=0;
-   enemy.dying=true;
-   enemy.state="dead";
-   resetAnim(enemy);
+   player.state="hurt";
+   resetAnim(player);
   }
  }
 }
 
 // =======================
-// ANIMATION
-// =======================
-function resetAnim(e){e.frame=0;e.frameTime=0;}
-
-function animate(e,sprites){
- e.frameTime++;
- if(e.frameTime>=6){
-  e.frame++;
-  e.frameTime=0;
-  if(e.frame>=sprites[e.state].frames){
-   e.frame=0;
-
-   if(e===player && e.attacking){
-    e.attacking=false;
-    e.state="idle";
-    enemy.justHit=false;
-   }
-
-   if(e===enemy && e.state==="dead" && enemy.dying){
-    enemy.remove=true;
-    enemy.alive=false;
-   }
-
-   if(e===player && e.state==="hurt"){
-    e.state = "idle";
-   }
-  }
- }
-
- // 🔥 AGREGADO – PLAYER DEAD SE QUEDA EN ÚLTIMO FRAME
- if(e===player && playerDead){
-  e.frame = playerSprites.dead.frames - 1;
- }
-}
-
-// =======================
-// DRAW
-// =======================
-function drawEntity(e,sprites,flip){
- const s=sprites[e.state];
- ctx.save();
- ctx.translate(flip?e.x+e.w:e.x,e.y);
- ctx.scale(flip?-1:1,1);
- ctx.drawImage(s.img,e.frame*FRAME_SIZE,0,FRAME_SIZE,FRAME_SIZE,0,0,e.w,e.h);
- ctx.restore();
-}
-
-function drawHealthBar(e){
- const r=e.hp/e.maxHp;
- ctx.fillStyle="red";
- ctx.fillRect(e.x,e.y-12,e.w,8);
- ctx.fillStyle="lime";
- ctx.fillRect(e.x,e.y-12,e.w*r,8);
-}
-
-function draw(){
-    ctx.save();
-
- ctx.clearRect(0,0,canvas.width,canvas.height);
- ctx.scale(GAME_SCALE, GAME_SCALE);
- ctx.fillStyle="#2e7d32";
- ctx.fillRect(0,GROUND_Y,canvas.width,60);
-
- drawEntity(player,playerSprites,player.facing===-1);
-
- if(!enemy.remove){
-  drawEntity(enemy,enemySprites,enemy.facing=== -1);
-  drawHealthBar(enemy);
- }
-
- drawHealthBar(player);
-
- ctx.restore();
-}
-
-// =======================
-// LOOP
+// LOOP (FIX)
 // =======================
 function loop(){
 
-    if(gamePaused){
-        draw();
-        requestAnimationFrame(loop);
-        return;
-    }
+ if(gamePaused){
+  draw();
+  requestAnimationFrame(loop);
+  return;
+ }
+
  updatePlayer();
  updateEnemyAI();
  animate(player,playerSprites);
  animate(enemy,enemySprites);
  applyDamage();
 
- // 🔥 AGREGADO – DETECTAR MUERTE PLAYER
- if(!playerDead && player.hp <= 0){
-  playerDead = true;
-  player.state = "dead";
-  player.vx = 0;
-  player.vy = 0;
-  resetAnim(player);
+ // ✅ FIX: la muerte SOLO se maneja acá
+ if(player.hp <= 0 && !gameOver){
+  if(!playerDead){
+   playerDead = true;
+   player.state = "dead";
+   resetAnim(player);
+   deathTimer = 60;
+  }
+  deathTimer--;
+  if(deathTimer <= 0){
+   gameOver = true;
+   gamePaused = true;
+   respawnBtn.style.display="block";
+  }
  }
 
  draw();
