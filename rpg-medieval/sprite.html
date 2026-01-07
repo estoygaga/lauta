@@ -58,6 +58,8 @@ const GAME_SCALE = 1.5;
     
 let gamePaused = false;    
 let deathTimer = 0;    
+let playerDead = false;
+let gameOver = false;
     
     
 // =======================    
@@ -106,10 +108,7 @@ const player={
  maxHp:100,hp:100    
 };    
     
-// 🔥 AGREGADO – CONTROL MUERTE PLAYER    
-let playerDead = false;    
-    
-let showGameOver = false;    
+// 🔥 AGREGADO – CONTROL MUERTE PLAYER        
     
 // =======================    
 // ENEMY    
@@ -384,7 +383,20 @@ function draw(){
   drawHealthBar(enemy);    
  }    
     
- drawHealthBar(player);    
+ drawHealthBar(player); 
+ 
+ if (gameOver) {
+    ctx.fillStyle = "rgba(0,0,0,0,6)";
+    ctx.fillRect(0, 0, canvas.width / GAME_SCALE,
+        canvas.height / GAME_SCALE);
+        
+        ctx.fillStyle = "red";
+        ctx.font = "48px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("GAME OVER", 
+        (canvas.width / GAME_SCALE) / 2,
+        (canvas.height / GAME_SCALE) / 2);
+ }
     
  ctx.restore();    
 }    
