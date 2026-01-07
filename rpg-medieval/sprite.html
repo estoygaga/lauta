@@ -61,18 +61,19 @@ let deathTimer = 0;
 let playerDead = false;
 let gameOver = false;
 
-let level = 1;
-let exp = 0;
-let expToNext = 100;
+player.level = 1;
+player.exp = 0;
+player.nextLevelExp = 100;
 
 function gainExp(amount){
-    playerExp += amount;
+    player.exp += amount;
 
-    if(playerExp >= expToNextLevel){
-        playerExp -= expToNextLevel;
-        expToNextLevel = Math.floor(expToNextLevel * 1.4);
+    if(player.exp >= player.nextLevelExp){
+        player.exp -= player.nextLevelExp;
+        player.level++;
+        player.nextLevelExp = Math.floor(player.nextLevelExp * 1.4);
 
-        console.log("SUBISTE A NIVEL" playerLevel);
+        console.log("SUBISTE A NIVEL", player.level);
 
         onLevelUp();
     }
@@ -445,7 +446,7 @@ ctx.restore();
     const barWidth = 200;
     const barHeight = 14;
 
-    const ratio = exp / expToNext;
+    const ratio = player.exp / player.nextLevelExp;
     
     ctx.fillStyle = "#333";
     ctx.fillRect(barX, barY, barWidth, barHeight);
