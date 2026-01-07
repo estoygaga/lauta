@@ -271,8 +271,17 @@ function enemyAttack(){
     player.state = "hurt";
     resetAnim(player);
   }
- }
-}
+  if (player.hp === 0 && !gameOver) {
+    gameOver = true;
+
+    player.state = "dead";
+    resetAnim(player);
+
+    gamePaused = true;
+    respawnBtn.style.display = "block";
+  }
+ };
+};
 
 // =======================
 // COLLISION
