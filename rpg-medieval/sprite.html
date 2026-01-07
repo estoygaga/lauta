@@ -87,7 +87,11 @@ const player = {
 
     attacking: false,
     shielding: false,
-    attackToggle: false
+    attackToggle: false,
+
+    // ❤️ VIDA (NUEVO)
+    maxHp: 100,
+    hp: 100
 };
 
 // =======================
@@ -101,7 +105,11 @@ const enemy = {
     state: "idle",
     frame: 0,
     frameTime: 0,
-    facing: -1
+    facing: -1,
+
+    // ❤️ VIDA (NUEVO)
+    maxHp: 100,
+    hp: 100
 };
 
 // =======================
@@ -135,10 +143,7 @@ window.addEventListener("keydown", e => {
 
 window.addEventListener("keyup", e => {
     keys[e.key] = false;
-
-    if (e.key === "s") {
-        player.shielding = false;
-    }
+    if (e.key === "s") player.shielding = false;
 });
 
 // =======================
@@ -153,13 +158,11 @@ function updatePlayer() {
             player.vx = -player.speed;
             player.facing = -1;
             player.state = "run";
-        }
-        else if (keys["d"]) {
+        } else if (keys["d"]) {
             player.vx = player.speed;
             player.facing = 1;
             player.state = "run";
-        }
-        else if (player.grounded) {
+        } else if (player.grounded) {
             player.state = "idle";
         }
 
@@ -185,23 +188,22 @@ function updatePlayer() {
 // =======================
 // ANIMATION
 // =======================
-function resetAnim(entity) {
-    entity.frame = 0;
-    entity.frameTime = 0;
+function resetAnim(e) {
+    e.frame = 0;
+    e.frameTime = 0;
 }
 
-function animate(entity, sprites) {
-    entity.frameTime++;
-    if (entity.frameTime >= 6) {
-        entity.frame++;
-        entity.frameTime = 0;
+function animate(e, sprites) {
+    e.frameTime++;
+    if (e.frameTime >= 6) {
+        e.frame++;
+        e.frameTime = 0;
 
-        if (entity.frame >= sprites[entity.state].frames) {
-            entity.frame = 0;
-
-            if (entity === player && entity.attacking) {
-                entity.attacking = false;
-                entity.state = "idle";
+        if (e.frame >= sprites[e.state].frames) {
+            e.frame = 0;
+            if (e === player && e.attacking) {
+                e.attacking = false;
+                e.state = "idle";
             }
         }
     }
@@ -210,34 +212,45 @@ function animate(entity, sprites) {
 // =======================
 // DRAW
 // =======================
-function drawEntity(entity, sprites, flip) {
-    const sprite = sprites[entity.state];
-    if (!sprite) return;
-
+function drawEntity(e, sprites, flip) {
+    const s = sprites[e.state];
     ctx.save();
-    ctx.translate(flip ? entity.x + entity.w : entity.x, entity.y);
+    ctx.translate(flip ? e.x + e.w : e.x, e.y);
     ctx.scale(flip ? -1 : 1, 1);
-
     ctx.drawImage(
-        sprite.img,
-        entity.frame * FRAME_SIZE, 0,
+        s.img,
+        e.frame * FRAME_SIZE, 0,
         FRAME_SIZE, FRAME_SIZE,
         0, 0,
-        entity.w, entity.h
+        e.w, e.h
     );
-
     ctx.restore();
 }
 
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+// ❤️ BARRA DE VIDA (NUEVO)
+function drawHealthBar(e) {
+    const barW = e.w;
+    const barH = 8;
+    const hpRatio = e.hp / e.maxHp;
 
-    // suelo
+    ctx.fillStyle = "red";
+    ctx.fillRect(e.x, e.y - 12, barW, barH);
+
+    ctx.fillStyle = "lime";
+    ctx.fillRect(e.x, e.y - 12, barW * hpRatio, barH);
+}
+
+function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
     ctx.fillStyle = "#2e7d32";
     ctx.fillRect(0, GROUND_Y, canvas.width, 60);
 
     drawEntity(player, playerSprites, player.facing === -1);
     drawEntity(enemy, enemySprites, true);
+
+    drawHealthBar(player);
+    drawHealthBar(enemy);
 }
 
 // =======================
