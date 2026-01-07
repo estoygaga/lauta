@@ -174,11 +174,11 @@ function handleHit() {
 
     const hitbox = {
         x: player.facing === 1
-            ? player.x + player.w - 10
-            : player.x - 18,
-        y: player.y + 30,
-        w: 28,
-        h: 30
+            ? player.x + player.w / 2 + 10
+            : player.x + player.w / 2 - 26,
+        y: player.y + 34,
+        w: 16,
+        h: 24
     };
 
     if (rectsOverlap(hitbox, enemy)) {
