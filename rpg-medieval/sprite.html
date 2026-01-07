@@ -86,10 +86,15 @@ const enemy={
  alive:true,
  justHit:false,
 
- // 🔥 AGREGADO
  dying:false,
  remove:false
 };
+
+// =======================
+// 🔥 AGREGADO – RESPAWN ENEMY
+// =======================
+let enemyRespawnTimer = 0;
+const ENEMY_RESPAWN_TIME = 180; // ~3 segundos
 
 // =======================
 // INPUT
@@ -209,13 +214,29 @@ function animate(e,sprites){
     enemy.justHit=false;
    }
 
-   // 🔥 DESAPARECER TRAS DEAD
    if(e===enemy && e.state==="dead" && enemy.dying){
     enemy.remove=true;
     enemy.alive=false;
    }
   }
  }
+}
+
+// =======================
+// 🔥 AGREGADO – RESPAWN FUNCIÓN
+// =======================
+function respawnEnemy(){
+ enemy.hp = enemy.maxHp;
+ enemy.state = "idle";
+ enemy.frame = 0;
+ enemy.frameTime = 0;
+ enemy.alive = true;
+ enemy.dying = false;
+ enemy.remove = false;
+ enemy.justHit = false;
+ enemy.x = 700;
+ enemy.y = GROUND_Y - enemy.h;
+ enemyRespawnTimer = 0;
 }
 
 // =======================
@@ -267,6 +288,15 @@ function loop(){
  animate(player,playerSprites);
  animate(enemy,enemySprites);
  applyDamage();
+
+ // 🔥 AGREGADO – TIMER RESPAWN
+ if(enemy.remove){
+  enemyRespawnTimer++;
+  if(enemyRespawnTimer >= ENEMY_RESPAWN_TIME){
+   respawnEnemy();
+  }
+ }
+
  draw();
  requestAnimationFrame(loop);
 }
