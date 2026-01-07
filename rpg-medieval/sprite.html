@@ -158,6 +158,13 @@ window.addEventListener("keydown",e=>{
   player.state="shield";    
   resetAnim(player);    
  }    
+ if(e.key==="h"){
+    if(!playerDead){
+        player.hp -= 10;
+        if (player.hp < 0) player.hp = 0;
+        console.log("HP:", player.hp);
+    }
+ }
 });    
 window.addEventListener("keyup",e=>{    
  keys[e.key]=false;    
