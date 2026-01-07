@@ -228,7 +228,14 @@ function updatePlayer(){
 // =======================    
 // UPDATE ENEMY IA    
 // =======================    
-function updateEnemyAI(){    
+function updateEnemyAI(){
+    if (playerDead){
+        enemy.state = "idle";
+        enemy.attackCooldown = 0;
+        return;
+    }
+    
+
  if(!enemy.alive || enemy.dying || enemy.remove || playerDead) return;    
     
  const dist = player.x - enemy.x;    
