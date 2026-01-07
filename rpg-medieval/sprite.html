@@ -75,6 +75,9 @@ const player={
  maxHp:100,hp:100
 };
 
+// 🔥 AGREGADO – CONTROL MUERTE PLAYER
+let playerDead = false;
+
 // =======================
 // ENEMY
 // =======================
@@ -88,13 +91,12 @@ const enemy={
  dying:false,
  remove:false,
 
- // 🔥 AGREGADO – IA
  speed:1.2,
  attackCooldown:0
 };
 
 // =======================
-// 🔥 AGREGADO – RESPAWN ENEMY
+// RESPAWN ENEMY
 // =======================
 let enemyRespawnTimer = 0;
 const ENEMY_RESPAWN_TIME = 180;
@@ -133,6 +135,10 @@ window.addEventListener("keyup",e=>{
 // UPDATE PLAYER
 // =======================
 function updatePlayer(){
+
+ // 🔥 AGREGADO – PLAYER MUERTO NO SE MUEVE
+ if(playerDead) return;
+
  if(!player.attacking&&!player.shielding){
   player.vx=0;
   if(keys["a"]){player.vx=-player.speed;player.facing=-1;player.state="run";}
@@ -157,10 +163,10 @@ function updatePlayer(){
 }
 
 // =======================
-// 🔥 AGREGADO – UPDATE ENEMY IA
+// UPDATE ENEMY IA
 // =======================
 function updateEnemyAI(){
- if(!enemy.alive || enemy.dying || enemy.remove) return;
+ if(!enemy.alive || enemy.dying || enemy.remove || playerDead) return;
 
  const dist = player.x - enemy.x;
  enemy.facing = dist < 0 ? -1 : 1;
@@ -180,10 +186,10 @@ function updateEnemyAI(){
 }
 
 // =======================
-// 🔥 AGREGADO – ENEMY HITBOX
+// ENEMY ATTACK
 // =======================
 function enemyAttack(){
- if(player.shielding) return;
+ if(player.shielding || playerDead) return;
 
  const hitbox={
   x: enemy.facing===1 ? enemy.x+enemy.w-10 : enemy.x-30,
@@ -199,7 +205,7 @@ function enemyAttack(){
 }
 
 // =======================
-// HITBOX & DAÑO PLAYER
+// COLLISION
 // =======================
 function rectsCollide(a,b){
  return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
@@ -243,34 +249,24 @@ function animate(e,sprites){
   e.frameTime=0;
   if(e.frame>=sprites[e.state].frames){
    e.frame=0;
-   if(e===player&&e.attacking){
+
+   if(e===player && e.attacking){
     e.attacking=false;
     e.state="idle";
     enemy.justHit=false;
    }
+
    if(e===enemy && e.state==="dead" && enemy.dying){
     enemy.remove=true;
     enemy.alive=false;
    }
   }
  }
-}
 
-// =======================
-// RESPAWN ENEMY
-// =======================
-function respawnEnemy(){
- enemy.hp=enemy.maxHp;
- enemy.state="idle";
- enemy.frame=0;
- enemy.frameTime=0;
- enemy.alive=true;
- enemy.dying=false;
- enemy.remove=false;
- enemy.justHit=false;
- enemy.x=700;
- enemy.y=GROUND_Y-enemy.h;
- enemyRespawnTimer=0;
+ // 🔥 AGREGADO – PLAYER DEAD SE QUEDA EN ÚLTIMO FRAME
+ if(e===player && playerDead){
+  e.frame = playerSprites.dead.frames - 1;
+ }
 }
 
 // =======================
@@ -313,16 +309,18 @@ function draw(){
 // =======================
 function loop(){
  updatePlayer();
- updateEnemyAI(); // 🔥 AGREGADO
+ updateEnemyAI();
  animate(player,playerSprites);
  animate(enemy,enemySprites);
  applyDamage();
 
- if(enemy.remove){
-  enemyRespawnTimer++;
-  if(enemyRespawnTimer>=ENEMY_RESPAWN_TIME){
-   respawnEnemy();
-  }
+ // 🔥 AGREGADO – DETECTAR MUERTE PLAYER
+ if(!playerDead && player.hp <= 0){
+  playerDead = true;
+  player.state = "dead";
+  player.vx = 0;
+  player.vy = 0;
+  resetAnim(player);
  }
 
  draw();
