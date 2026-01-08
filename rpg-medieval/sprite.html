@@ -96,6 +96,7 @@ function evolveTo2(){
     player.hp = player.maxHp;
     player.speed += 0.5;
     player.damage += 5;
+    reloadPlayerSprites();
 
 
     console.log("EVOLUCIONÓN 2 ACTIVADA");
@@ -156,7 +157,7 @@ const player={
  grounded:true,facing:1,    
  state:"idle",frame:0,frameTime:0,    
  attacking:false,shielding:false,attackToggle:false,    
- maxHp:100,hp:100,level:1,exp:0,nextLevelExp:100,
+ maxHp:100,hp:100,damage:15,level:1,exp:0,nextLevelExp:100,
  evolution:1    
 };    
     
