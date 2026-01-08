@@ -61,28 +61,6 @@ let deathTimer = 0;
 let playerDead = false;
 let gameOver = false;
 
-let player ={
-    x: 100,
-    y: 300,
-
-    width: 128,
-    height: 128,
-
-    speed: 2,
-    hp: 100,
-    maxHp: 100,
-    isDead: false,
-    damage: 15,
-    state: "idle",
-    frameX: 0,
-    frameY: 0,
-    frameTimer: 0,
-    frameInterval: 120,
-
-    level: 1,
-    exp: 0,
-    nextLevelExp: 100
-};
 
 function gainExp(amount){
     player.exp += amount;
@@ -149,7 +127,7 @@ const player={
  grounded:true,facing:1,    
  state:"idle",frame:0,frameTime:0,    
  attacking:false,shielding:false,attackToggle:false,    
- maxHp:100,hp:100    
+ maxHp:100,hp:100,level:1,exp:0,nextLevelExp:100    
 };    
     
 // 🔥 AGREGADO – CONTROL MUERTE PLAYER        
