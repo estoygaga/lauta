@@ -61,11 +61,48 @@ let deathTimer = 0;
 let playerDead = false;
 let gameOver = false;
 
+let inventoryOpen = false;
+
 let currentEvolution = 1;
 
 let evolving = false;
 let evolveTimer = 0;
 const EVOLVE_TIME = 60;
+
+function createItem(type, amount = 1){
+    return {
+        type: type,
+        amount: amount
+    };
+}
+function addItem(type, amount = 1){
+    let item = inventory.find(i =>
+        i.type === type);
+        
+        if(item){
+            item.amount += amount;
+        }else{
+            inventory.push(createItem(type, amount));
+        }
+}
+function usePotion(){
+    let potion = inventory.find(i =>
+        i.type === "potion");
+
+        if(!potion) return;
+        if(player.hp >= player.maxHp)
+        return;
+
+        player.hp += 40;
+        if(player.hp > player.maxHp)
+        player.hp = player.maxHp;
+
+        potion.amount--;
+
+        if(potion.amount <= 0){
+            inventory.splice(inventory.indexOf(potion), 1);
+        }
+}
 
 
 function gainExp(amount){
@@ -170,6 +207,11 @@ const player={
  maxHp:100,hp:100,damage:15,level:1,exp:0,nextLevelExp:100,
  evolution:1    
 };    
+const inventory = {
+    open: false,
+    size: 12,
+    items: []
+};
     
 // 🔥 AGREGADO – CONTROL MUERTE PLAYER        
     
@@ -245,6 +287,15 @@ window.addEventListener("keydown",e=>{
  if(e.key==="p"){
     gainExp(50);
     console.log("DEBUG: +50 EXP");
+ }
+ if(e.key === "i"){
+    inventoryOpen = !inventoryOpen;
+ }
+ if(e.key === "e"){
+    usePotion();
+ }
+ if(e.key === "o"){
+    addItem("potion", 1);
  }
 });    
 window.addEventListener("keyup",e=>{    
@@ -454,7 +505,26 @@ function drawHealthBar(e){
  ctx.fillRect(e.x,e.y-12,e.w,8);    
  ctx.fillStyle="lime";    
  ctx.fillRect(e.x,e.y-12,e.w*r,8);    
-}    
+}   
+
+function drawInventory(){
+    if(!inventoryOpen) return;
+
+    ctx.save();
+    ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+    ctx.fillRect(250, 100, 300, 220);
+
+    ctx.fillStyle = "white";
+    ctx.font = "18px Arial";
+    ctx.fillText("INVENTARIO", 330,130);
+
+    inventory.forEach((item, index)=>{
+        ctx.fillText(
+            item.type + " x" + item.amount, 280, 170 + index * 30
+        );
+    });
+    ctx.restore();
+}
     
 function draw(){    
     ctx.save();    
@@ -498,6 +568,7 @@ function draw(){
         (canvas.width/GAME_SCALE)/2,(canvas.height)/2
     );
  }
+ drawInventory();
 
 ctx.restore();
 }
