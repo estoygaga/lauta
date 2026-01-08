@@ -70,7 +70,7 @@ function gainExp(amount){
 
     if(player.exp >= player.nextLevelExp){
         player.exp -= player.nextLevelExp;
-        player.level++;
+        player.level ++;
         player.nextLevelExp = Math.floor(player.nextLevelExp * 1.4);
 
         console.log("SUBISTE A NIVEL", player.level);
@@ -85,13 +85,6 @@ function onLevelUp(){
     player.speed += 0.3;
 }
 
-function levelUp(){
-    player.level++;
-    player.exp = 0;
-    player.nextLevelExp = Math.floor(player.nextLevelExp * 1.4);
-
-    onLevelUp();
-}
     
     
 // =======================    
@@ -434,7 +427,7 @@ function draw(){
  }
 
  drawExpBar();
- 
+
 }
  
 ctx.restore();
