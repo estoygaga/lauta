@@ -490,11 +490,11 @@ function draw(){
 
  if(evolving){
     ctx.fillStyle = "rgba(255,255,255,0.7)";
-    ctx.fillRect(0,0,canvas.width/GAME_SCALE,canvas/GAME_SCALE);
+    ctx.fillRect(0, 0, canvas.width / GAME_SCALE, canvas.height / GAME_SCALE);
 
     ctx.fillStyle = "black";
     ctx.textAlign = "center";
-    ctx.fillRect("EVOLUCIONANDO...", 
+    ctx.fillText("EVOLUCIONANDO...", 
         (canvas.width/GAME_SCALE)/2,(canvas.height)/2
     );
  }
@@ -536,8 +536,8 @@ function drawExpBar(){
 function loop(){ 
     
     if(evolving){
-        evolutionTimer--;
-        if(evolutionTimer <= 0){
+        evolveTimer--;
+        if(evolveTimer <= 0){
             finishEvolutionTo2();
         }
         draw();
