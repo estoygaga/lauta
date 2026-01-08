@@ -231,6 +231,10 @@ window.addEventListener("keydown",e=>{
         console.log("HP:", player.hp);
     }
  }
+ if(e.key==="p"){
+    gainExp(50);
+    console.log("DEBUG: +50 EXP");
+ }
 });    
 window.addEventListener("keyup",e=>{    
  keys[e.key]=false;    
