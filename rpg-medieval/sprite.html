@@ -87,10 +87,6 @@ function onLevelUp(){
     player.hp = player.maxHp;
     player.speed += 0.3;
 
-    if (player.level === 6 && currentEvolution === 1){
-        currentEvolution = 2;
-        reloadPlayerSprites();
-    }
 }
 
 function evolveTo2(){
@@ -134,11 +130,6 @@ const playerSprites = {
  dead:{ file:"Dead.png", img:new Image(), frames:3},    
  hurt:{ file:"Hurt.png", img:new Image(), frames:3}    
 };    
-for(let s in playerSprites){
-    playerSprites[s].img.src =
-    getPlayerSpritePath() +
-    playerSprites[s].file;
-}   
 
 function reloadPlayerSprites() {
     for (let s in playerSprites){
