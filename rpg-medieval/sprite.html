@@ -61,9 +61,28 @@ let deathTimer = 0;
 let playerDead = false;
 let gameOver = false;
 
-player.level = 1;
-player.exp = 0;
-player.nextLevelExp = 100;
+let player ={
+    x: 100,
+    y: 300,
+
+    width: 128,
+    height: 128,
+
+    speed: 2,
+    hp: 100,
+    maxHp: 100,
+    isDead: false,
+    damage: 15,
+    state: "idle",
+    frameX: 0,
+    frameY: 0,
+    frameTimer: 0,
+    frameInterval: 120,
+
+    level: 1,
+    exp: 0,
+    nextLevelExp: 100
+};
 
 function gainExp(amount){
     player.exp += amount;
