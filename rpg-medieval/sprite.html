@@ -158,6 +158,7 @@ function respawnEnemy(){
     enemy.y = GROUND_Y - enemy.h;
 
     enemy.hp = enemy.maxHp;
+    enemy.alive = true;
     enemy.dying = false;
     enemy.remove = false;
     enemy.justHit = false;
@@ -341,7 +342,8 @@ function applyDamage(){
   enemy.state="hurt";    
   resetAnim(enemy);    
   if(enemy.hp<=0){    
-   enemy.hp=0;    
+   enemy.hp=0; 
+   enemy.alive=false;   
    enemy.dying=true;    
    enemy.state="dead";    
    resetAnim(enemy); 
