@@ -201,7 +201,7 @@ for(let s in enemySprites){
 const player={    
  x:150,y:GROUND_Y-106,w:106,h:106,    
  vx:0,vy:0,speed:2.5,jumpForce:-12,    
- grounded:true,facing:1,    
+ grounded:false,facing:1,    
  state:"idle",frame:0,frameTime:0,    
  attacking:false,shielding:false,attackToggle:false,    
  maxHp:100,hp:100,damage:15,level:1,exp:0,nextLevelExp:100,
@@ -436,14 +436,16 @@ function rectsCollide(a,b){
 }   
 
 function checkPlatformCollision(player){
-    player.grounded = false;
+    let onPlatform = false;
 
     platforms.forEach(p => {
         const playerBottom = player.y + player.h;
         
         const playerNextBottom = playerBottom + player.vy;
 
-        const withinX = player.x + player.w  > p.x && player.x < p.x + p.w;
+        const withinX = 
+        player.x + player.w  > p.x && 
+        player.x < p.x + p.w;
 
         if (
             withinX &&
@@ -452,12 +454,13 @@ function checkPlatformCollision(player){
         ) {
             player.y = p.y  - player.h;
             player.vy = 0;
-            player.grounded = true;
+            onPlatform = true;
         }
 
 
 
     });
+    player.grounded = onPlatform;
 }
     
 function getAttackHitbox(){    
