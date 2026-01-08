@@ -61,6 +61,8 @@ let deathTimer = 0;
 let playerDead = false;
 let gameOver = false;
 
+let currentEvolution = 1;
+
 
 function gainExp(amount){
     player.exp += amount;
@@ -82,21 +84,26 @@ function onLevelUp(){
     player.speed += 0.3;
 }
 
+function getPlayerSpritePath() {
+    return `Sprites/Knight/evo$
+    {currentEvolution}/`;
+}
+
     
     
 // =======================    
 // SPRITES PLAYER    
 // =======================    
 const playerSprites = {    
- idle:{src:"Sprites/Knight/Idle.png",frames:6},    
- run:{src:"Sprites/Knight/Run.png",frames:8},    
- jump:{src:"Sprites/Knight/Jump.png",frames:10},    
- attack1:{src:"Sprites/Knight/Attack_1.png",frames:4},    
- attack2:{src:"Sprites/Knight/Attack_2.png",frames:3},    
- attack3:{src:"Sprites/Knight/Attack_3.png",frames:4},    
- shield:{src:"Sprites/Knight/Shield.png",frames:2},    
- dead:{src:"Sprites/Knight/Dead.png",frames:3},    
- hurt:{src:"Sprites/Knight/Hurt.png",frames:3}    
+ idle:{src: getPlayerSpritePath() + "Idle.png",frames:6},    
+ run:{src: getPlayerSpritePath() + "Run.png",frames:8},    
+ jump:{src: getPlayerSpritePath() + "Jump.png",frames:10},    
+ attack1:{src: getPlayerSpritePath() + "Attack_1.png",frames:4},    
+ attack2:{src: getPlayerSpritePath() + "Attack_2.png",frames:3},    
+ attack3:{src: getPlayerSpritePath() + "Attack_3.png",frames:4},    
+ shield:{src: getPlayerSpritePath() + "Shield.png",frames:2},    
+ dead:{src: getPlayerSpritePath() + "Dead.png",frames:3},    
+ hurt:{src: getPlayerSpritePath() + "Hurt.png",frames:3}    
 };    
 for(let s in playerSprites){    
  playerSprites[s].img=new Image();    
