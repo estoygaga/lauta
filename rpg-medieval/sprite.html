@@ -361,11 +361,14 @@ function updatePlayer(){
    resetAnim(player);    
   }    
  }    
+
+ const prevY = player.y;
+
  player.vy+=GRAVITY;    
  player.x+=player.vx;    
  player.y+=player.vy;    
  
- checkPlatformCollision(player);
+ checkPlatformCollision(player, prevY);
 
 }    
     
