@@ -351,10 +351,18 @@ function updatePlayer(){
     
  if(!player.attacking&&!player.shielding){    
   player.vx=0;    
-  if(keys["a"]){player.vx=-player.speed;player.facing=-1;player.state="run";}    
-  else if(keys["d"]){player.vx=player.speed;player.facing=1;player.state="run";}    
-  else if(player.grounded)player.state="idle";    
-    
+  
+  if(keys["a"]){
+    player.vx=-player.speed;
+    player.facing=-1;
+    player.state="run";
+  } else if(keys["d"]){
+    player.vx=player.speed;
+    player.facing=1;
+    player.state="run";
+  } else if(player.grounded){
+    player.state="idle";    
+  }
   if(keys["w"]&&player.grounded){    
    player.vy=player.jumpForce;    
    player.grounded=false;    
@@ -363,13 +371,33 @@ function updatePlayer(){
   }    
  }    
 
- const prevY = player.y;
+ let.vy += GRAVITY;
 
- player.vy+=GRAVITY;    
- player.x+=player.vx;    
- player.y+=player.vy;    
+ player.x += player.vx;
+
+ let nextY = player.y + player.vy;
  
- checkPlatformCollision(player, prevY);
+ player.grounded = false;
+
+ platforms.forEach(p => {
+    const withinX =
+        player.x + player.w > p.x &&
+        player.x < p.x + p.w;
+    
+    const falling =
+        player.vy >= 0 &&
+        player.y + player.h <= p.y &&
+    
+        nextY + player.h >= p.y;
+    
+    if(withinX && falling){
+        nextY = p.y - player.h;
+        player.vy = 0;
+        player.grounded = true;
+    }
+ });    
+ 
+ player.y = nextY;
 
 }    
     
