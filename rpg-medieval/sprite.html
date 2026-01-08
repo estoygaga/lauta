@@ -97,7 +97,6 @@ function evolveTo2(){
     player.speed += 0.5;
     player.damage += 5;
 
-    reloadPlayerSprites();
 
     console.log("EVOLUCIONÓN 2 ACTIVADA");
 }
@@ -124,6 +123,7 @@ const playerSprites = {
  dead:{ file:"Dead.png", img:new Image(), frames:3},    
  hurt:{ file:"Hurt.png", img:new Image(), frames:3}    
 };    
+reloadPlayerSprites();
 
 function reloadPlayerSprites() {
     for (let s in playerSprites){
