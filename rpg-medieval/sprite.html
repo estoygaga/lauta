@@ -86,6 +86,11 @@ function onLevelUp(){
     player.maxHp += 20;
     player.hp = player.maxHp;
     player.speed += 0.3;
+
+    if (player.level === 6 && currentEvolution === 1){
+        currentEvolution = 2;
+        reloadPlayerSprites();
+    }
 }
 
 function evolveTo2(){
@@ -133,7 +138,14 @@ for(let s in playerSprites){
     playerSprites[s].img.src =
     getPlayerSpritePath() +
     playerSprites[s].file;
-}    
+}   
+
+function reloadPlayerSprites() {
+    for (let s in playerSprites){
+        playerSprites[s].img.src = getPlayerSpritePath() +
+        playerSprites[s].file;
+    }
+}
     
 // =======================    
 // SPRITES ENEMY    
