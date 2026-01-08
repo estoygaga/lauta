@@ -63,6 +63,10 @@ let gameOver = false;
 
 let currentEvolution = 1;
 
+let evolving = false;
+let evolveTimer = 0;
+const EVOLVE_TIME = 60;
+
 
 function gainExp(amount){
     player.exp += amount;
@@ -88,8 +92,12 @@ function onLevelUp(){
     player.speed += 0.3;
 
 }
-
 function evolveTo2(){
+    evolving = true;
+    evolveTimer = 120;
+}
+
+function finishEvolutionTo2(){
     currentEvolution = 2;
 
     player.maxHp += 30;
@@ -97,6 +105,8 @@ function evolveTo2(){
     player.speed += 0.5;
     player.damage += 5;
     reloadPlayerSprites();
+    evolving = false;
+    gamePaused = false;
 
 
     console.log("EVOLUCIONÓN 2 ACTIVADA");
@@ -478,6 +488,17 @@ function draw(){
 
  drawExpBar();
 
+ if(evolving){
+    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    ctx.fillRect(0,0,canvas.width/GAME_SCALE,canvas/GAME_SCALE);
+
+    ctx.fillStyle = "black";
+    ctx.textAlign = "center";
+    ctx.fillRect("EVOLUCIONANDO...", 
+        (canvas.width/GAME_SCALE)/2,(canvas.height)/2
+    );
+ }
+
 ctx.restore();
 }
  
@@ -512,7 +533,17 @@ function drawExpBar(){
 // =======================    
 // LOOP    
 // =======================    
-function loop(){   
+function loop(){ 
+    
+    if(evolving){
+        evolutionTimer--;
+        if(evolutionTimer <= 0){
+            finishEvolutionTo2();
+        }
+        draw();
+        requestAnimationFrame(loop);
+        return;
+    }
     
     if (!playerDead && player.hp <= 0) {
         playerDead = true;
