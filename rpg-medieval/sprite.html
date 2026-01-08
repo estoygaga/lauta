@@ -563,9 +563,15 @@ function drawInventory(){
 }
     
 function draw(){    
-    ctx.save();    
     
- ctx.clearRect(0,0,canvas.width,canvas.height);    
+ ctx.save();   
+ ctx.clearRect(
+    0,
+    0,
+    canvas.width / GAME_SCALE,
+    canvas.height / GAME_SCALE
+);
+
  ctx.scale(GAME_SCALE, GAME_SCALE);    
  ctx.fillStyle="#2e7d32";    
  platforms.forEach(p => {
