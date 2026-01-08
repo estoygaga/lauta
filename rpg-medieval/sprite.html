@@ -322,7 +322,21 @@ function respawnPlayer() {
     
     respawnBtn.style.display = "none";    
     gamePaused = false;    
-}    
+} 
+
+const platforms = [
+    { x: 0,   y: GROUND_Y,   w: 2000,
+        h: 60 },
+    { x: 300, y: GROUND_Y-80, w: 120,
+        h: 20 },
+    { x: 550, y: GROUND_Y-140, w: 140,
+        h:20},
+    { x: 850, y: GROUND_Y-100, w: 120,
+        h: 20},
+       
+]
+
+
     
     
 // =======================    
@@ -349,11 +363,9 @@ function updatePlayer(){
  player.vy+=GRAVITY;    
  player.x+=player.vx;    
  player.y+=player.vy;    
- if(player.y+player.h>=GROUND_Y){    
-  player.y=GROUND_Y-player.h;    
-  player.vy=0;    
-  player.grounded=true;    
- }    
+ 
+ checkPlatformCollision();
+
 }    
     
 // =======================    
@@ -416,7 +428,33 @@ function enemyAttack(){
 // =======================    
 function rectsCollide(a,b){    
  return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;    
-}    
+}   
+
+function checkPlatformCollision(player){
+    
+    player.grounded = false;
+
+    platforms.forEach(p => {
+        const playerBottom = player.y + player.h;
+        
+        const playerNextBottom = playerBottom + player.vy;
+
+        const withinX = player.x + player.w  > p.x && player.x < p.x + p.w;
+
+        if (
+            withinX &&
+            playerBottom <= p.y &&
+            playerNextBottom >= p.y
+        ) {
+            player.y = p.y  - player.h;
+            player.vy = 0;
+            player.grounded = true;
+        }
+
+
+
+    });
+}
     
 function getAttackHitbox(){    
  if(!player.attacking)return null;    
@@ -530,7 +568,9 @@ function draw(){
  ctx.clearRect(0,0,canvas.width,canvas.height);    
  ctx.scale(GAME_SCALE, GAME_SCALE);    
  ctx.fillStyle="#2e7d32";    
- ctx.fillRect(0,GROUND_Y,canvas.width,60);    
+ platforms.forEach(p => {
+    ctx.fillRect(p.x, p.y, p.w, p.h);
+ });
     
  drawEntity(player,playerSprites,player.facing===-1);    
     
