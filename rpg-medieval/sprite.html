@@ -106,13 +106,7 @@ function getPlayerSpritePath() {
     return `Sprites/Knight/evo${currentEvolution}/`;
 }
 
-function reloadPlayerSprites(){
-    for(let key in playerSprites){
-        playerSprites[key].img.src = getPlayerSpritePath() + playerSprites[key].file;
-        
 
-    }
-}
 
     
     
@@ -120,12 +114,12 @@ function reloadPlayerSprites(){
 // SPRITES PLAYER    
 // =======================    
 const playerSprites = {    
- idle:{ file:"Idle.png", img:new Image(), frames:6}
+ idle:{ file:"Idle.png", img:new Image(), frames:6},
  run:{ file:"Run.png", img:new Image(), frames:8},    
  jump:{ file:"Jump.png", img:new Image(), frames:10},    
  attack1:{ file:"Attack_1.png",img:new Image(), frames:4},    
  attack2:{ file:"Attack_2.png", img:new Image(), frames:3},    
- attack3:{ file:"Attack_3.png", img:new Image(), frames:4}
+ attack3:{ file:"Attack_3.png", img:new Image(), frames:4},
  shield:{ file:"Shield.png", img:new Image(), frames:2},    
  dead:{ file:"Dead.png", img:new Image(), frames:3},    
  hurt:{ file:"Hurt.png", img:new Image(), frames:3}    
