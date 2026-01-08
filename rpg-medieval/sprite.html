@@ -500,7 +500,9 @@ function loop(){
  updatePlayer();   
  
  if(enemy.remove){
-    enemyRespawnTimer <= 0){
+    if(enemyRespawnTimer <= 0){
+        enemyRespawnTimer--;
+    }else {
         respawnEnemy();
     }
  }
