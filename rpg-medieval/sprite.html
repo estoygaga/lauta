@@ -207,11 +207,7 @@ const player={
  maxHp:100,hp:100,damage:15,level:1,exp:0,nextLevelExp:100,
  evolution:1    
 };    
-const inventory = {
-    open: false,
-    size: 12,
-    items: []
-};
+const inventory = [];
     
 // 🔥 AGREGADO – CONTROL MUERTE PLAYER        
     
@@ -567,7 +563,8 @@ function draw(){
     ctx.fillStyle = "black";
     ctx.textAlign = "center";
     ctx.fillText("EVOLUCIONANDO...", 
-        (canvas.width/GAME_SCALE)/2,(canvas.height)/2
+        (canvas.width / GAME_SCALE)/2,
+        (canvas.height / GAME_SCALE)/2
     );
  }
  drawInventory();
