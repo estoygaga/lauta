@@ -432,7 +432,6 @@ function rectsCollide(a,b){
 
 function checkPlatformCollision(player){
     
-    player.grounded = false;
 
     platforms.forEach(p => {
         const playerBottom = player.y + player.h;
