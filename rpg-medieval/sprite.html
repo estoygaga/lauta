@@ -288,9 +288,7 @@ window.addEventListener("keydown",e=>{
     gainExp(50);
     console.log("DEBUG: +50 EXP");
  }
- if(e.key === "i"){
-    inventoryOpen = !inventoryOpen;
- }
+
  if(e.key === "e"){
     usePotion();
  }
@@ -299,7 +297,11 @@ window.addEventListener("keydown",e=>{
  }
 });    
 window.addEventListener("keyup",e=>{    
- keys[e.key]=false;    
+ keys[e.key]=false;
+ 
+ if(e.key === "i"){
+    inventoryOpen = !inventoryOpen;
+ }
  if(e.key==="s")player.shielding=false;    
 });    
 const pauseBtn = document.getElementById("pauseBtn");    
