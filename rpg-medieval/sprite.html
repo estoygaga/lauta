@@ -54,7 +54,7 @@ const ctx = canvas.getContext("2d");
 const GRAVITY = 0.6;        
 const FRAME_SIZE = 128;    
 const GAME_SCALE = 1.5;    
-const GROUND_Y = canvas.height - 60;    
+const GROUND_Y = (canvas.height / GAME_SCALE) - 60;    
 
 let gamePaused = false;    
 let deathTimer = 0;    
