@@ -151,7 +151,21 @@ const enemy={
     
 // =======================    
 // RESPAWN ENEMY    
-// =======================    
+// =======================   
+
+function respawnEnemy(){
+    enemy.x = 700;
+    enemy.y = GROUND_Y - enemy.h;
+
+    enemy.hp = enemy.maxHp;
+    enemy.dying = false;
+    enemy.remove = false;
+    enemy.justHit = false;
+
+    enemy.state = "idle";
+    enemy.frame = 0;
+    enemy.frameTime = 0;
+}
 let enemyRespawnTimer = 0;    
 const ENEMY_RESPAWN_TIME = 180;    
     
@@ -331,6 +345,8 @@ function applyDamage(){
    enemy.dying=true;    
    enemy.state="dead";    
    resetAnim(enemy); 
+
+   enemyRespawnTimer = ENEMY_RESPAWN_TIME;
    
    gainExp(50);
   }    
@@ -479,7 +495,13 @@ function loop(){
         requestAnimationFrame(loop);    
         return;    
     }    
- updatePlayer();    
+ updatePlayer();   
+ 
+ if(enemy.remove){
+    enemyRespawnTimer <= 0){
+        respawnEnemy();
+    }
+ }
  updateEnemyAI();    
  animate(player,playerSprites);    
  animate(enemy,enemySprites);    
