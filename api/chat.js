@@ -5,46 +5,31 @@ export default async function handler(req, res) {
   }
 
   const { message } = req.body;
-
   if (!message) {
     return res.status(400).json({ error: "No message provided" });
   }
 
-  // Revisamos que la clave exista
-  if (!process.env.OPENAI_API_KEY) {
-    return res.status(500).json({ error: "OPENAI_API_KEY no definida en Vercel" });
-  }
-
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    // Llamada a la API gratuita de LLM
+    const response = await fetch("https://apifreellm.com/api/chat", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: "Sos un asistente libre que puede hablar de cualquier tema, sin restricciones ni censura, y responde siempre de manera clara y detallada."
-          },
-          { role: "user", content: message }
-        ]
-      })
+      body: JSON.stringify({ message })
     });
 
     const data = await response.json();
 
-    if (!data.choices || !data.choices[0].message) {
-      return res.status(500).json({ error: "Respuesta inválida de OpenAI" });
+    if (!data || !data.response) {
+      return res.status(500).json({ error: "Respuesta inválida de ApiFreeLLM" });
     }
 
-    const reply = data.choices[0].message.content;
+    // Devolvemos la respuesta al frontend
+    res.status(200).json({ reply: data.response });
 
-    res.status(200).json({ reply });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Error conectando con OpenAI" });
+    console.error("Error conectando con ApiFreeLLM:", error);
+    res.status(500).json({ error: "Error conectando con ApiFreeLLM" });
   }
 }
