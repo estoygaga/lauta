@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Prueba API Chat</title>
+</head>
+<body>
+<h2>Prueba de conexión al backend</h2>
+<button onclick="probar()">Enviar mensaje</button>
+<div id="resultado"></div>
+
+<script>
+async function probar() {
+  const resultado = document.getElementById("resultado");
+  try {
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: "Hola, prueba!" })
+    });
+    const data = await response.json();
+    resultado.innerText = JSON.stringify(data, null, 2);
+  } catch (error) {
+    resultado.innerText = "Error: " + error;
+  }
+}
+</script>
+</body>
+</html>
