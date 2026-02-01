@@ -15,7 +15,8 @@ handler(req, res) {
     const response = await fetch("https://apifreellm.com/api/chat", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": `Bearer apf_imfgux7ujzlj7ynylv824qjx`
       },
       body: JSON.stringify({ message })
     });
