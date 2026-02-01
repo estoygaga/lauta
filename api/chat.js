@@ -12,7 +12,7 @@ handler(req, res) {
 
   try {
     // Llamada a la API gratuita de LLM
-    const response = await fetch("https://apifreellm.com/api/chat", {
+    const response = await fetch("https://apifreellm.com/api/v1/chat", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
