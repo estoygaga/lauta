@@ -124,6 +124,7 @@
       });
 
       const data = await response.json();
+      console.log("Respuesta del backend:", data);
       messages.removeChild(typing);
 
       if (data.reply) {
