@@ -18,7 +18,10 @@ handler(req, res) {
         "Content-Type": "application/json",
         "Authorization": `Bearer apf_imfgux7ujzlj7ynylv824qjx`
       },
-      body: JSON.stringify({ message })
+      body: JSON.stringify({ message: "Hola, como estas?",
+        model: "apifreellm"
+
+       })
     });
 
     const data = await response.json();
